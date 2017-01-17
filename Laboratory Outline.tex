@@ -1,0 +1,45 @@
+\documentclass{article}
+\title{\textbf{Laboratory Outline}}
+\author{Mick Wright\\Chris Duffy}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{Project Objectives}
+\subsection{Clean Up}
+\begin{enumerate}
+\item{Hot Pixels - Statistcal thresholding approach}
+\item{Cosmic Ray Strikes - threshold approach}
+\item{Statistical Treatment of Dark Current - software ideally should be able to handle either statistical or subtractive approach based on given images}
+\item{Perfect the Flat Fielding - Mostly fine, assuming there aren't more sophisticated approaches}
+\item{Readout noise - inherent to CCD, loss of signal can be modelled and reversed}
+\item{Point Spread Function - Can this be included in any reasonable way?} 
+\item{Vignetting - this needs to be modelled and removed for image stitching - statistcal approach or instrumental thing?}
+\end{enumerate}
+
+\subsection{Systemic Corrections}
+\begin{enumerate}
+\item{Night Sky Brightness - If possible, find a better way of getting the values to remove than from before}
+\item{Lunar Effects on the Sky}
+\item{Glare Effects}
+\item{Image Registration - transforming multiple images onto one different one co-ordinates. Spatio-temporal differenes between the images cause a degree of uncertainty - look into the modelling of this uncertrainty}
+\item{Fast Fourier Transform - use this to remove frequency based noise in the images - make further reading in this area to find application and use} 
+\end{enumerate}
+
+
+\subsection{Cosmetics}
+\begin{enumerate}
+\item{Stretching - mathematical enhancement}
+\item{Colour Mapping}
+\item{False-Colouring - if we're layering multiple images at varying wavelengths on top of each other}
+\end{enumerate}
+
+\subsection{GUI Considerations}
+The GUI section of the project, would be to create a program that was as simple, yet powerful, as possible. Ideally, one would be able to put in as much or as little data as one had and be able to get as many corrections as physically possible - ideally this would be automatic, but failing that a manual checklist or some such.
+
+It should also be capable of either overlaying or image stitching based on available data - hopefully this decision will be automatic. 
+
+
+\end{document}

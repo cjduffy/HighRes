@@ -1,0 +1,13 @@
+Code Development Task List
+
+Dark Current from given data
+Dark Current from a statistical Stand Point
+Hot Pixels
+Flat Field
+Cosmic Ray strike removal
+Registration
+Wavelet Flitering
+Fourier Transformation
+
+Command Line Interface
+Graphical Interface

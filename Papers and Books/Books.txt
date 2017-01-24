@@ -2,3 +2,6 @@ Books Used
 Astronomical Observations: An Optical Perspective - Gordon Walker
 Observational Astrophysics - Smith
 Astrophysical Technique - C. R. Kitchen
+The Handbook of Astronomical Image 
+Processing - R.Berry & J.Burnell
+Teach Yourself C for Linux Programing 

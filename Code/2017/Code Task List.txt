@@ -1,13 +1,15 @@
-Code Development Task List
+Code Development Task List from the fun 
+Python Land
 
 Dark Current from given data
-Dark Current from a statistical Stand Point
 Hot Pixels
 Flat Field
 Cosmic Ray strike removal
 Registration
 Wavelet Flitering
-Fourier Transformation
+Fourier Transformation, DFT.
+Stack and Add Deconvoultion Processes
+
 
 Command Line Interface
 Graphical Interface

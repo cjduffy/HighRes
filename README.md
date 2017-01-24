@@ -47,4 +47,23 @@ Layering multiple wavelength images together (and Image Stitching)
 Fast Fourier Transformation
 Wavelet Filtering
 Distortions
-Median Filtering
+Median Filtering (Cosmic Ray Strikes)
+
+Initial Software
+MATLAB can autoconvert from itself to C but it makes sense to do 
+some/all conversions by hand in order to refamiliarise ourselves with 
+the language before moving on to the more complex later tasks.
+
+Primary Priority:
+Convert one of the more simple pieces - it would be good to the Dark 
+Current approaches. This allows us to start simply with the naive 
+destructive approach before adding additional complexity with 
+refinements via additional statistical processing. 
+
+Dark Current
+The naive approach to dark current is to simply take a same exposure 
+length image with a lens cap on to locate all the hot pixels and then 
+simply subtract this image from the image being processed. Whilst this 
+approach does remove all errors from the images, it is destructive and 
+does not attempt even remotely to recover the data that should already 
+be there. 

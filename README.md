@@ -22,3 +22,13 @@ Investigate software - tracking capabilities and customisability
 Establish the degree of automation that is feasible
 Begin process of converting code from MATLAB to C as a test of 
 feasibility for writing all software for the project in C
+
+Equipment
+
+Meade Telescope
+QHY5-II
+
+Means the theorhetical resolution of the system is
+R = wavelength/D = 0.28"
+Telescope is seeing limited (seeing = 2") so the goal would be to push 
+the accuracy above the seeing limit. 

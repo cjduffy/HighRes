@@ -32,3 +32,19 @@ Means the theorhetical resolution of the system is
 R = wavelength/D = 0.28"
 Telescope is seeing limited (seeing = 2") so the goal would be to push 
 the accuracy above the seeing limit. 
+Each pixel has an area of capture of 0.284"*0.281" = 0.080(arc^2)
+
+Software Concerns
+Can use MATLAB to create sample data for the software to unblur as a 
+testing scenario before moving on to actual data
+Registration - use RegiStar as a benchmarking program
+
+User should have a choice between:
+Statistical approaches to image corrections
+Other image based corrections
+
+Layering multiple wavelength images together (and Image Stitching)
+Fast Fourier Transformation
+Wavelet Filtering
+Distortions
+Median Filtering

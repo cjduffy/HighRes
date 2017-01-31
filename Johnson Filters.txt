@@ -1,0 +1,15 @@
+Band 		Wavelength
+U			365
+B			445
+V			551
+R			658
+I			806
+J			1220
+H			1630
+K			2190
+L			3450
+M			4750
+
+
+J. Binney & M Merrifield
+Galactic Astronomy

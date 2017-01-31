@@ -7,6 +7,7 @@ Flat Field
 Cosmic Ray strike removal
 Registration
 Wavelet Flitering
+PSF Calcuation of imaged point sources
 Fourier Transformation, DFT.
 Stack and Add Deconvoultion Processes
 

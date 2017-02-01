@@ -1,9 +1,10 @@
-Code Development Task List from the fun 
-Python Land
+Code Development Task List from the fun Python Land
 
-Dark Current from given data
+Master Dark Current Creation
+Dark Current removal -- IN PROGRESS
 Hot Pixels
-Flat Field
+Master Flat Field Creation
+Flat Field removal -- IN PROGRESS
 Cosmic Ray strike removal
 Registration
 Wavelet Flitering
@@ -13,4 +14,4 @@ Stack and Add Deconvoultion Processes
 
 
 Command Line Interface
-Graphical Interface
+Graphical Interface --IN PROGRESS

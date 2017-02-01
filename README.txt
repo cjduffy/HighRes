@@ -1,0 +1,5 @@
+PACKAGE DEPENDENCIES
+
+astropy
+PIL
+Numpy

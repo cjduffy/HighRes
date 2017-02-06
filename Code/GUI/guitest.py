@@ -20,6 +20,7 @@ class MyWindow(Gtk.Window):
 		
 	def on_button1_clicked(self, widget):
 		print("Welcome to Wonderland")
+		print(2+2)
 		
 	def on_button2_clicked(self, widget):
 		print("Do you want to build a snowman?")

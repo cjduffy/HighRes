@@ -3,3 +3,5 @@ PACKAGE DEPENDENCIES
 astropy
 PIL
 Numpy
+gtk3
+pygobject

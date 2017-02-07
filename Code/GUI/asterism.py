@@ -1,4 +1,5 @@
 import gi
+from AVItoFITS import avi_to_fits
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
@@ -31,8 +32,8 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			print("select clicked")
-			print("Folder Selected: " + dialog.get_filename())
+			l = dialog.get_filename()
+			avi_to_fits(group=l)
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Cancel Clicked")
 				

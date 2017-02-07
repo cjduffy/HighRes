@@ -2,7 +2,7 @@ Code Development Task List from the fun Python Land
 
 Master Dark Current Creation
 Dark Current removal -- IN PROGRESS
-Hot Pixels
+Hot Pixels -- IN PROGRESS
 Master Flat Field Creation
 Flat Field removal -- IN PROGRESS
 Cosmic Ray strike removal

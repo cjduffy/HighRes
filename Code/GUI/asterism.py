@@ -26,14 +26,21 @@ class MyWindow(Gtk.Window):
 		button2.connect("clicked",self.on_file_clicked)
 		box.add(button2)
 		
+		button3 = Gtk.Button("Start")
+		button3.connect("clicked", self.begin_conversion)
+		box.add(button3)
+		
+		l = 0
+		
 	def on_folder_clicked(self, widget):
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
 		dialog.set_default_size(800,400)
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
+			global l
 			l = dialog.get_filename()
-			avi_to_fits(group=l)
+			print(l)
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Cancel Clicked")
 				
@@ -64,6 +71,15 @@ class MyWindow(Gtk.Window):
 		filter_any.set_name("Any File")
 		filter_any.add_pattern("*")
 		dialog.add_filter(filter_any)
+		
+	def begin_conversion(self, widget):
+		global l
+		print(l)
+		if (l != 0):
+			m = avi_to_fits(group=l)
+			print(m)
+		else:
+			print("l is 0")
 
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)

@@ -1,15 +1,15 @@
 def avi_to_fits(single="none", group="none", switch=False):
 	
 	import os
-	import numpy
+	import numpy as np
 	import cv2
 	from astropy.io import fits
 	from PIL import Image
 	
-	if (single!="none"):
+	if (single != "none"):
 		n = 1
-		if file.endswith(".avi"):
-			video_capture = cv2.VideoCapture(file)
+		if single.endswith(".avi"):
+			video_capture = cv2.VideoCapture(single)
 		
 			while True:
 			#check frame is there, and read it in
@@ -19,8 +19,9 @@ def avi_to_fits(single="none", group="none", switch=False):
 					break
 			
 			#construct the filenames
-				filename_tif = "frame_%d.tif" %n
-				filename_fits = "frame_%d.fits" %n
+				filepath = single
+				filename_tif = single+"frame_%d.tif" %n
+				filename_fits = single+"frame_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)
@@ -40,22 +41,22 @@ def avi_to_fits(single="none", group="none", switch=False):
 			return(100)
 			
 	elif (group != "none"):
-		n = 1
-		l = 1 
-		for file in group:
+		l = 1
+		for file in os.listdir(group):
+			n = 1
 			if file.endswith(".avi"):
 				video_capture = cv2.VideoCapture(file)
-		
 				while True:
 			#check frame is there, and read it in
 					ret, frame = video_capture.read()
 			#if at end of video, break out of loop
 					if (ret != True):
 						break
+						
 			
 			#construct the filenames
-					filename_tif = "frame%d_%d.tif" %l %n
-					filename_fits = "frame%d_%d.fits" %l %n
+					filename_tif = group+"/frame_"+str(l)+"_"+str(n)+".tif"
+					filename_fits = group+"/frame_"+str(l)+"_"+str(n)+".fits"
 			
 			#write the TIF
 					cv2.imwrite(filename_tif,frame)
@@ -73,9 +74,8 @@ def avi_to_fits(single="none", group="none", switch=False):
 				l = l+1
 			else:
 				pass
-		return (2)
+		return(2)
 	else:
 		return (200)
 			
-	
 	

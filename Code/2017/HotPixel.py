@@ -14,3 +14,5 @@ print(x)
 mean = convolve2d(arr,y, mode='same')
 
 arr[arr > 2000] = mean[arr > 2000]
+
+#MUST INTEGRATE SOME METHOD OF SELECTING THE THRESHOLD FROM THE AVERAGE DARK CURRENT

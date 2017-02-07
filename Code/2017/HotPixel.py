@@ -12,5 +12,4 @@ y = np.divide(x, 4)
 print(x)
 
 mean = convolve2d(arr,y, mode='same')
-print (mean)
 

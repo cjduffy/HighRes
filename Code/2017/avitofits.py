@@ -38,8 +38,8 @@ for file in os.listdir(cwd):
 			
 			#convert to FITS and remove TIF
 			hdu = fits.PrimaryHDU()
-			im = Image.Open(filename_tif)
-			hdu.data = np_array(im)
+			im = Image.open(filename_tif)
+			hdu.data = np.array(im)
 			hdu.writeto(filename_fits, overwrite = True)
 			os.remove(filename_tif)
 			

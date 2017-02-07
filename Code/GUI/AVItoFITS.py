@@ -10,7 +10,6 @@ def avi_to_fits(single="none", group="none", switch=False):
 		n = 1
 		if single.endswith(".avi"):
 			video_capture = cv2.VideoCapture(single)
-		
 			while True:
 			#check frame is there, and read it in
 				ret, frame = video_capture.read()
@@ -45,7 +44,8 @@ def avi_to_fits(single="none", group="none", switch=False):
 		for file in os.listdir(group):
 			n = 1
 			if file.endswith(".avi"):
-				video_capture = cv2.VideoCapture(file)
+				filepath = group+"/"+file
+				video_capture = cv2.VideoCapture(filepath)
 				while True:
 			#check frame is there, and read it in
 					ret, frame = video_capture.read()

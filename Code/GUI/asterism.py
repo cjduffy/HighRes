@@ -30,7 +30,17 @@ class MyWindow(Gtk.Window):
 		button3.connect("clicked", self.begin_conversion)
 		box.add(button3)
 		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.on_switch_activated)
+		switch.set_active(False)
+		box.pack_start(switch, True, True, 0)
+		
+		global l
 		l = 0
+		global m
+		m = 0
+		global state
+		state = False
 		
 	def on_folder_clicked(self, widget):
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
@@ -40,9 +50,8 @@ class MyWindow(Gtk.Window):
 		if response == Gtk.ResponseType.OK:
 			global l
 			l = dialog.get_filename()
-			print(l)
 		elif response == Gtk.ResponseType.CANCEL:
-			print("Cancel Clicked")
+			print("Folder Selection Cancelled")
 				
 		dialog.destroy()
 		
@@ -54,10 +63,10 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			print("Open Clicked")
-			print("File Selected: " + dialog.get_filename())
+			global m
+			m = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
-			print("Cancel clicked")
+			print("File Selection Cancelled")
 		
 		dialog.destroy()
 		
@@ -72,14 +81,30 @@ class MyWindow(Gtk.Window):
 		filter_any.add_pattern("*")
 		dialog.add_filter(filter_any)
 		
+	def on_switch_activated(self, switch, gparam):
+		global state
+		if switch.get_active():
+			state = True
+		else:
+			state = False
+		
 	def begin_conversion(self, widget):
 		global l
-		print(l)
+		global m
+		global state
 		if (l != 0):
-			m = avi_to_fits(group=l)
-			print(m)
+			n = avi_to_fits(group=l, switch=state)
+		if (m != 0):
+			o = avi_to_fits(single=m, switch=state)
 		else:
-			print("l is 0")
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+			wrn_dialog.format_secondary_text("Please Select a File or Folder")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
 
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)

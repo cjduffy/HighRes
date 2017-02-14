@@ -25,14 +25,107 @@ class MyWindow(Gtk.Window):
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		
 		row = Gtk.ListBoxRow()
-		hor_box = Gtk.Box(spacing=3)
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS conversion")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		button1 = Gtk.Button("Choose Folder")
+		button1.connect("clicked",self.on_folder_clicked)
+		ver_box.add(button1)
+		
+		button2 = Gtk.Button("Choose File")
+		button2.connect("clicked",self.on_file_clicked)
+		ver_box.add(button2)
+		
+		button3 = Gtk.Button("Split AVI to Frames")
+		button3.connect("clicked", self.begin_conversion)
+		ver_box.add(button3)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
 		
 		label = Gtk.Label("Retain TIFs?")
 		hor_box.pack_start(label, True, True, 0)
 		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.on_switch_activated)
+		switch.set_active(False)
+		ver_box.pack_start(switch, True, True, 0)
+		
 		listbox.add(row)
-		stack.add_titled(listbox, "Dark Current", "Dark Current")
+		
+		stack.add_titled(listbox, "Dark Current & Bias Frame", "Dark Current & Bias Frame")
+		
+				
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS conversion")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		button1 = Gtk.Button("Choose Folder")
+		button1.connect("clicked",self.on_folder_clicked)
+		ver_box.add(button1)
+		
+		button2 = Gtk.Button("Choose File")
+		button2.connect("clicked",self.on_file_clicked)
+		ver_box.add(button2)
+		
+		button3 = Gtk.Button("Split AVI to Frames")
+		button3.connect("clicked", self.begin_conversion)
+		ver_box.add(button3)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.on_switch_activated)
+		switch.set_active(False)
+		ver_box.pack_start(switch, True, True, 0)
+		
+		listbox.add(row)
+		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)

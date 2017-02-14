@@ -15,7 +15,7 @@ class MyWindow(Gtk.Window):
 		hb.props.title = "Asterism" 
 		self.set_titlebar(hb)
 		
-		box = Gtk.Box(spacing = 10)
+		box = Gtk.Box(spacing=6)
 		self.add(box)
 		
 		button1 = Gtk.Button("Choose Folder")
@@ -26,7 +26,7 @@ class MyWindow(Gtk.Window):
 		button2.connect("clicked",self.on_file_clicked)
 		box.add(button2)
 		
-		button3 = Gtk.Button("Start")
+		button3 = Gtk.Button("Split AVI to Frames")
 		button3.connect("clicked", self.begin_conversion)
 		box.add(button3)
 		

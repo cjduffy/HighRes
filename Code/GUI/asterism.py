@@ -30,6 +30,9 @@ class MyWindow(Gtk.Window):
 		button3.connect("clicked", self.begin_conversion)
 		box.add(button3)
 		
+		label = Gtk.Label("Retain TIFs?")
+		box.pack_start(label, True, True, 0)
+		
 		switch = Gtk.Switch()
 		switch.connect("notify::active", self.on_switch_activated)
 		switch.set_active(False)

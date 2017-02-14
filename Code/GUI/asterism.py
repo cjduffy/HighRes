@@ -1,5 +1,8 @@
 import gi
-import AVItoFITS
+from AVItoFITS import avi_to_fits
+from AVItoFITS import avi_to_fits_black
+from AVItoFITS import avi_to_fits_white
+from AVItoFITS import avi_to_fits_grey
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 

@@ -14,13 +14,28 @@ class MyWindow(Gtk.Window):
 		hb.props.title = "Asterism" 
 		self.set_titlebar(hb)
 		
-		head_box = Gtk.Box(Gtk.Orientation.VERTICAL, spacing = 3) 
-		head_box.set_hexpand(False)
-		self.add(head_box)
-
+		outer_box = Gtk.Box(spacing = 6)
+		self.add(outer_box)
+		
+		stack = Gtk.Stack()
+		stack.set_transition_type(Gtk.StackTransitionType.NONE)
+		stack.set_transition_duration(1000)
+		
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-		head_box.add(listbox)
+		
+		row = Gtk.ListBoxRow()
+		hor_box = Gtk.Box(spacing=3)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		stack.add_titled(listbox, "Dark Current", "Dark Current")
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		
 		row = Gtk.ListBoxRow()
 		
@@ -69,6 +84,13 @@ class MyWindow(Gtk.Window):
 		ver_box.pack_start(switch, True, True, 0)
 		
 		listbox.add(row)
+		stack.add_titled(listbox, "Raw Data", "Raw Data")
+		
+		stack_sidebar = Gtk.StackSidebar()
+		stack_sidebar.set_stack(stack)
+		outer_box.pack_start(stack_sidebar, True, True, 0)
+		outer_box.pack_start(stack, True, True, 0)
+
 		
 		global l
 		l = 0

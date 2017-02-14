@@ -24,8 +24,8 @@ imagedata = Image[0].data
 
 
 ##Checking the existance of Flat Field and Dark Current Images and reads them in
-if os.path.isfile('masterFF.fits'):
-	flat_field = fits.open('masterFF.fits') 
+if os.path.isfile('Master Flat.fits'):
+	flat_field = fits.open('Master Flat.fits') 
 	flatdata = flat_field[0].data
 elif os.path.isfile('FF.fits'):
 	flat_field = fits.open('FF.fits')
@@ -34,8 +34,8 @@ else:
 	print('Error:No Flat Field')
 	#Add Error Condiditon Here
 	
-if os.path.isfile('masterDC.fits'):
-	Dark_Current = fits.open('masterDC.fits')
+if os.path.isfile('Master Dark.fits'):
+	Dark_Current = fits.open('Master Dark.fits')
 	darkdata = Dark_Current[0].data
 elif os.path.isfile('DC.fits'):
 	Dark_Current = fits.open('DC.fits')

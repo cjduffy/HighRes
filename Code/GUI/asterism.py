@@ -15,8 +15,25 @@ class MyWindow(Gtk.Window):
 		hb.props.title = "Asterism" 
 		self.set_titlebar(hb)
 		
-		box = Gtk.Box(spacing=6)
+		box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
 		self.add(box)
+		
+		head_label = Gtk.Label("AVI to FITS conversion")
+		box.pack_start(head_label, True, True, 0)
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		box.pack_start(listbox, True, True, 0)
+		
+		row = Gtk.ListBoxRow()
+		
+		listbox.add(row)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		
 		
 		button1 = Gtk.Button("Choose Folder")
 		button1.connect("clicked",self.on_folder_clicked)

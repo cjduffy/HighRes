@@ -3,6 +3,12 @@ from AVItoFITS import avi_to_fits
 from AVItoFITS import avi_to_fits_black
 from AVItoFITS import avi_to_fits_white
 from AVItoFITS import avi_to_fits_grey
+from astropy.io import fits
+import numpy as np
+from PIL import Image
+import matplotlib
+import matplotlib.pyplot as plt 
+
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
@@ -233,8 +239,11 @@ class MyWindow(Gtk.Window):
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
-		outer_box.pack_start(stack, True, True, 0)
+		outer_box.pack_end(stack, True, True, 0)
 
+		frame = Gtk.Frame(label="Image")
+		outer_box.pack_start(frame, True, True, 0)
+		
 		
 		global l
 		l = 0

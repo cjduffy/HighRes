@@ -19,8 +19,8 @@ def avi_to_fits(single="none", group="none", switch=False):
 			
 			#construct the filenames
 				filepath = single
-				filename_tif = single+"frame_%d.tif" %n
-				filename_fits = single+"frame_%d.fits" %n
+				filename_tif = "frame_%d.tif" %n
+				filename_fits = "frame_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)
@@ -99,8 +99,8 @@ def avi_to_fits_black(single="none", group="none", switch=False):
 			
 			#construct the filenames
 				filepath = single
-				filename_tif = single+"dark_%d.tif" %n
-				filename_fits = single+"dark_%d.fits" %n
+				filename_tif = "dark_%d.tif" %n
+				filename_fits = "dark_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)
@@ -179,8 +179,8 @@ def avi_to_fits_grey(single="none", group="none", switch=False):
 			
 			#construct the filenames
 				filepath = single
-				filename_tif = single+"bias_%d.tif" %n
-				filename_fits = single+"bias_%d.fits" %n
+				filename_tif = "bias_%d.tif" %n
+				filename_fits = "bias_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)
@@ -259,8 +259,8 @@ def avi_to_fits_white(single="none", group="none", switch=False):
 			
 			#construct the filenames
 				filepath = single
-				filename_tif = single+"flat_%d.tif" %n
-				filename_fits = single+"flat_%d.fits" %n
+				filename_tif = "flat_%d.tif" %n
+				filename_fits = "flat_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)

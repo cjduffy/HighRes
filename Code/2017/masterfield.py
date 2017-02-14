@@ -23,8 +23,8 @@ for root, dirs, files in os.walk(cwd):
         if file.startswith('flat_'):
             flatCounter += 1
 
-for file in os.listdir(cwd)
-	for n in range (1, flatCounter)
+for file in os.listdir(cwd):
+	for n in range (1, flatCounter):
 		flat_field = "flat_%d" %n
 		flat_fit = fits.open(flat_field)
 		flatdata = flat_fit[0].data
@@ -45,8 +45,8 @@ for root, dirs, files in os.walk(cwd):
         if file.startswith('flat_dark_'):
             flatdarkCounter += 1
             
-for file in os.listdir(cwd)
-	for n in range (1, flatdarkCounter)
+for file in os.listdir(cwd):
+	for n in range (1, flatdarkCounter):
 		flat_dark_name = "flat_dark_%d" %l
 		flat_dark_fit = fits.open(flat_dark_name)
 		flat_darkdata = flat_dark_fit[0].data
@@ -68,8 +68,8 @@ for root, dirs, files in os.walk(cwd):
         if file.startswith('bias_'):
             biasCounter += 1
             
-for file in os.listdir(cwd)
-	for n in range (1, biasCounter)
+for file in os.listdir(cwd):
+	for n in range (1, biasCounter):
 		bias_name = "bias_%d" %m
 		bias_fit = fits.open(bias_name)
 		biasdata = bias_fit[0].data
@@ -90,8 +90,8 @@ for root, dirs, files in os.walk(cwd):
         if file.startswith('dark_'):
             darkCounter += 1
             
-for file in os.listdir(cwd)
-	for n in range (1, darkCounter)
+for file in os.listdir(cwd):
+	for n in range (1, darkCounter):
 		dark_name = "dark_%d" %k
 		dark_fit = fits.open(dark_name)
 		darkdata = dark_fit[0].data

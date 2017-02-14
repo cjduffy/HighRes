@@ -8,16 +8,19 @@ class MyWindow(Gtk.Window):
 	def __init__(self):
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
-		self.set_default_size(400, 200)
 
 		hb = Gtk.HeaderBar()
 		hb.set_show_close_button(True)
 		hb.props.title = "Asterism" 
 		self.set_titlebar(hb)
 		
+		head_box = Gtk.Box(Gtk.Orientation.VERTICAL, spacing = 3) 
+		head_box.set_hexpand(False)
+		self.add(head_box)
+
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-		self.add(listbox)
+		head_box.add(listbox)
 		
 		row = Gtk.ListBoxRow()
 		

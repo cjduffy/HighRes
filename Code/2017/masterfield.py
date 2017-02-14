@@ -8,6 +8,7 @@ dark_time = 1
 n = 1
 m = 1
 k = 1
+l = 1
 
 #Use integration times 5 times the length of the longest integration
 
@@ -32,7 +33,28 @@ for file in os.listdir(cwd)
 		n += 1
 
 mean_flat = np.divide(flats, n)
-mean_flat_dark = np.divide(flat_darks, n)
+
+flatdark = fits.open('flat_dark_1.fits')
+flatdarkdata = flatdark[0].data
+size = flatdarkdata.shape
+flat_dark = np.zeros(size)
+
+flatdarkCounter = 0
+for root, dirs, files in os.walk(cwd):
+    for file in files:    
+        if file.startswith('flat_dark_'):
+            flatdarkCounter += 1
+            
+for file in os.listdir(cwd)
+	for n in range (1, flatdarkCounter)
+		flat_dark_name = "flat_dark_%d" %l
+		flat_dark_fit = fits.open(flat_dark_name)
+		flat_darkdata = flat_dark_fit[0].data
+		flat_dark = np.add(flat_dark, flat_darkdata)
+	
+		l += 1
+
+mean_flat_dark = np.divide(flat_dark, l)
 master_flat = np.subtract(mean_flat, mean_flat_dark)
 
 bias = fits.open('bias_1.fits')

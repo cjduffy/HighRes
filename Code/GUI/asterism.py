@@ -49,7 +49,7 @@ class MyWindow(Gtk.Window):
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Dark Current AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_dark)
+		button3.connect("clicked", self.begin_conversion_black)
 		ver_box.add(button3)
 		
 		listbox.add(row)

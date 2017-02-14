@@ -258,9 +258,9 @@ def avi_to_fits_white(single="none", group="none", switch=False):
 					break
 			
 			#construct the filenames
-				filepath = single
-				filename_tif = "flat_%d.tif" %n
-				filename_fits = "flat_%d.fits" %n
+				filepath = os.path.dirname(single)
+				filename_tif = filepath+"/flat_%d.tif" %n
+				filename_fits = filepath+"/flat_%d.fits" %n
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)

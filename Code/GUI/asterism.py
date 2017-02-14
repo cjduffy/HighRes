@@ -7,7 +7,10 @@ from astropy.io import fits
 import numpy as np
 from PIL import Image
 import matplotlib
-import matplotlib.pyplot as plt 
+import matplotlib.pyplot as plt
+
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import GdkPixbuf
 
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
@@ -241,8 +244,11 @@ class MyWindow(Gtk.Window):
 		outer_box.pack_start(stack_sidebar, True, True, 0)
 		outer_box.pack_end(stack, True, True, 0)
 
-		frame = Gtk.Frame(label="Image")
-		outer_box.pack_start(frame, True, True, 0)
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 600, 900, True)
+		
+		image = Gtk.Image()
+		image.set_from_pixbuf(pixbuf)
+		outer_box.pack_start(image, True, True, 0)
 		
 		
 		global l

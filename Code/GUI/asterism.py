@@ -26,9 +26,13 @@ class MyWindow(Gtk.Window):
 		head_label = Gtk.Label("AVI to FITS conversion")
 		head_box.pack_start(head_label, True, True, 0)
 		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-		head_box.pack_start(hor_box, True, True, 0)
-		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
@@ -43,8 +47,18 @@ class MyWindow(Gtk.Window):
 		button3.connect("clicked", self.begin_conversion)
 		ver_box.add(button3)
 		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
 		label = Gtk.Label("Retain TIFs?")
 		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
 		switch.connect("notify::active", self.on_switch_activated)

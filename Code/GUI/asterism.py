@@ -1,8 +1,5 @@
 import gi
-from AVItoFITS import avi_to_fits
-from AVItoFITS import avi_to_fits_black
-from AVItoFITS import avi_to_fits_white
-from AVItoFITS import avi_to_fits_grey
+import AVItoFITS as AtF
 from astropy.io import fits
 import numpy as np
 from PIL import Image
@@ -185,6 +182,54 @@ class MyWindow(Gtk.Window):
 		ver_box.pack_start(switch, True, True, 0)
 		
 		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box=Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS conversion - Flat Dark")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		button1 = Gtk.Button("Choose Folder")
+		button1.connect("clicked",self.on_folder_clicked)
+		ver_box.add(button1)
+		
+		button2 = Gtk.Button("Choose File")
+		button2.connect("clicked",self.on_file_clicked)
+		ver_box.add(button2)
+		
+		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
+		button3.connect("clicked", self.begin_conversion_white)
+		ver_box.add(button3)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.on_switch_activated)
+		switch.set_active(False)
+		ver_box.pack_start(switch, True, True, 0)
+		
+		listbox.add(row)
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		
 		listbox = Gtk.ListBox()
@@ -309,27 +354,9 @@ class MyWindow(Gtk.Window):
 		global m
 		global state
 		if (l != 0):
-			n = avi_to_fits(group=l, switch=state)
+			n = AtF.avi_to_fits(group=l, switch=state, Imtype="frame")
 		if (m != 0):
-			o = avi_to_fits(single=m, switch=state)
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
-			
-	def begin_conversion_white(self, widget):
-		global l
-		global m
-		global state
-		if (l != 0):
-			n = avi_to_fits_white(group=l, switch=state)
-		if (m != 0):
-			o = avi_to_fits_white(single=m, switch=state)
+			o = AtF.avi_to_fits(single=m, switch=state, Imtype="frame")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -345,9 +372,9 @@ class MyWindow(Gtk.Window):
 		global m
 		global state
 		if (l != 0):
-			n = avi_to_fits_black(group=l, switch=state)
+			n = AtF.avi_to_fits(group=l, switch=state, Imtype="dark")
 		if (m != 0):
-			o = avi_to_fits_black(single=m, switch=state)
+			o = AtF.avi_to_fits(single=m, switch=state, Imtype="dark")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -363,9 +390,9 @@ class MyWindow(Gtk.Window):
 		global m
 		global state
 		if (l != 0):
-			n = avi_to_fits_grey(group=l, switch=state)
+			n = AtF.avi_to_fits(group=l, switch=state, Imtype="bias")
 		if (m != 0):
-			o = avi_to_fits_grey(single=m, switch=state)
+			o = AtF.avi_to_fits(single=m, switch=state, Imtype="bias")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -375,6 +402,43 @@ class MyWindow(Gtk.Window):
 			elif response == Gtk.ResponseType.CANCEL:
 				print("Warning Cancelled")
 			wrn_dialog.destroy()
+			
+	def begin_conversion_white(self, widget):
+		global l
+		global m
+		global state
+		if (l != 0):
+			n = AtF.avi_to_fits(group=l, switch=state, Imtype="flat")
+		if (m != 0):
+			o = AtF.avi_to_fits(single=m, switch=state, Imtype="flat")
+		else:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+			wrn_dialog.format_secondary_text("Please Select a File or Folder")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+	
+	def begin_conversion_black_white(self, widget):
+		global l
+		global m
+		global state
+		if (l != 0):
+			n = AtF.avi_to_fits(group=l, switch=state, Imtype="flat_dark")
+		if (m != 0):
+			o = AtF.avi_to_fits(single=m, switch=state, Imtype="flat_dark")
+		else:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+			wrn_dialog.format_secondary_text("Please Select a File or Folder")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+	
 
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)

@@ -1,16 +1,17 @@
 Code Development Task List from the fun Python Land
 
-Master Dark Current Creation --Awating testing
+Master Dark Current Creation -- Implimented, Awating testing
 Dark Current removal -- Awaiting Testing
 Hot Pixels -- IN PROGRESS
-Master Flat Field Creation -- Awaiting Testing
+Master Flat Field Creation -- Implimented, Awaiting Testing
 Flat Field removal -- Awaiting Testing
-Cosmic Ray strike removal --Probably unnecessary
-Registration
+Cosmic Ray strike removal -- Probably unnecessary
+Registration -- IN PROGRESS
 Wavelet Flitering
 PSF Calcuation of imaged point sources
 Fourier Transformation, DFT.
 Stack and Add Deconvoultion Processes
+Lucky Frame Location -- Awaiting testing
 
 
 Command Line Interface -- Likely redundant

@@ -312,6 +312,76 @@ class MyWindow(Gtk.Window):
 		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Automatic Master Retrieval")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Retrieve Created Masters & Correct")
+		button1.connect("clicked", self.master_retrieval)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Manual Master Selection")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Select Master Flat Field")
+		button1.connect("clicked", self.manual_master_flat)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		button2 = Gtk.Button("Select Master Dark Current")
+		button2.connect("clicked", self.manual_master_dark)
+		ver_box.pack_start(button2, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Perform Dark Flat Correction")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Perform Darkflat Correction")
+		button1.connect("clicked", self.darkflat_correction)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Master Flat & Dark Correction", "Master Flat & Dark Correction")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -551,6 +621,18 @@ class MyWindow(Gtk.Window):
 		else:
 			mc.master_creation(r, p, "flat", "flatdarks")
 
+	def master_retrieval(self,widget):
+		print("master retrieval")
+			
+	def manual_master_dark(self,widget):
+		print("manual master dark selection")
+		
+	def manual_master_flat(self,widget):
+		print("manual master flat selection")
+		
+	def darkflat_correction(self,widget):
+		print("darkflat correction")
+			
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

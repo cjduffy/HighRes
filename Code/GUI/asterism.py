@@ -1,5 +1,6 @@
 import gi
 import AVItoFITS as AtF
+import mastercreation as mc
 from astropy.io import fits
 import numpy as np
 from PIL import Image
@@ -98,11 +99,11 @@ class MyWindow(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_clicked)
+		button1.connect("clicked",self.on_folder_2_clicked)
 		ver_box.add(button1)
 		
 		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_clicked)
+		button2.connect("clicked",self.on_file_2_clicked)
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Bias AVI to Frames")
@@ -129,8 +130,20 @@ class MyWindow(Gtk.Window):
 		
 		listbox.add(row)
 		
-		stack.add_titled(listbox, "Dark Current & Bias Frame", "Dark Current & Bias Frame")
+		row = Gtk.ListBoxRow()
 		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Create Scalable Thermal Frame")
+		button1.connect("clicked", self.create_thermal_master)
+		ver_box.add(button1)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Dark Current & Bias Frame", "Dark Current & Bias Frame")
 				
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
@@ -200,11 +213,11 @@ class MyWindow(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_clicked)
+		button1.connect("clicked",self.on_folder_2_clicked)
 		ver_box.add(button1)
 		
 		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_clicked)
+		button2.connect("clicked",self.on_file_2_clicked)
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
@@ -230,6 +243,20 @@ class MyWindow(Gtk.Window):
 		ver_box.pack_start(switch, True, True, 0)
 		
 		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Create Scalable Flat Field")
+		button1.connect("clicked", self.create_flat_master)
+		ver_box.add(button1)
+		
+		listbox.add(row)
+		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		
 		listbox = Gtk.ListBox()
@@ -282,6 +309,7 @@ class MyWindow(Gtk.Window):
 		ver_box.pack_start(switch, True, True, 0)
 		
 		listbox.add(row)
+		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
 		stack_sidebar = Gtk.StackSidebar()
@@ -295,7 +323,10 @@ class MyWindow(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
-		
+		global r
+		r = 0
+		global p 
+		p = 0
 		global l
 		l = 0
 		global m
@@ -316,6 +347,18 @@ class MyWindow(Gtk.Window):
 				
 		dialog.destroy()
 		
+	def on_folder_2_clicked(self, widget):
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		dialog.set_default_size(800,400)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global r
+			r = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("Folder Selection Cancelled")
+				
+		dialog.destroy()
 			
 	def on_file_clicked(self,widget):
 		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -326,6 +369,20 @@ class MyWindow(Gtk.Window):
 		if response == Gtk.ResponseType.OK:
 			global m
 			m = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("File Selection Cancelled")
+			
+		dialog.destroy()
+			
+	def on_file_2_clicked(self,widget):
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        		
+		self.add_filters(dialog)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global p
+			p = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("File Selection Cancelled")
 		
@@ -367,6 +424,7 @@ class MyWindow(Gtk.Window):
 				print("Warning Cancelled")
 			wrn_dialog.destroy()
 			
+			
 	def begin_conversion_black(self, widget):
 		global l
 		global m
@@ -386,13 +444,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 			
 	def begin_conversion_grey(self, widget):
-		global l
-		global m
+		global r
+		global p
 		global state
-		if (l != 0):
-			n = AtF.avi_to_fits(group=l, switch=state, Imtype="bias")
-		if (m != 0):
-			o = AtF.avi_to_fits(single=m, switch=state, Imtype="bias")
+		if (r != 0):
+			q = AtF.avi_to_fits(group=l, switch=state, Imtype="bias")
+		if (p != 0):
+			t = AtF.avi_to_fits(single=m, switch=state, Imtype="bias")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -422,13 +480,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 	
 	def begin_conversion_black_white(self, widget):
-		global l
-		global m
+		global r
+		global p
 		global state
-		if (l != 0):
-			n = AtF.avi_to_fits(group=l, switch=state, Imtype="flat_dark")
-		if (m != 0):
-			o = AtF.avi_to_fits(single=m, switch=state, Imtype="flat_dark")
+		if (r != 0):
+			q = AtF.avi_to_fits(group=l, switch=state, Imtype="flat_dark")
+		if (p != 0):
+			t = AtF.avi_to_fits(single=m, switch=state, Imtype="flat_dark")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -439,6 +497,59 @@ class MyWindow(Gtk.Window):
 				print("Warning Cancelled")
 			wrn_dialog.destroy()
 	
+	def create_thermal_master(self,widget):
+		global l
+		global r
+		
+		if (l == 0):
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
+			wrn_dialog.format_secondary_text("Please select a folder containing dark currents")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+			
+		elif (r == 0): 
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
+			wrn_dialog.format_secondary_text("Please select a folder containing bias images")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+		
+		else:
+			mc.master_creation(l, r, "dark", "bias")
+			
+	def create_flat_master(self,widget):
+		global a
+		global b
+		
+		if (r == 0):
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
+			wrn_dialog.format_secondary_text("Please select a folder containing flat fields")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+			
+		elif (p == 0): 
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
+			wrn_dialog.format_secondary_text("Please select a folder containing flat darks")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+		
+		else:
+			mc.master_creation(r, p, "flat", "flatdarks")
 
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)

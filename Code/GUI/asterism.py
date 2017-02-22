@@ -666,7 +666,7 @@ class MyWindow(Gtk.Window):
 		global dark_in
 		global bias_in
 		
-		if (l == 0):
+		if (dark_in == 0):
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
 			wrn_dialog.format_secondary_text("Please select a folder containing dark currents")
 			response = wrn_dialog.run()
@@ -676,7 +676,7 @@ class MyWindow(Gtk.Window):
 				print("Warning Cancelled")
 			wrn_dialog.destroy()
 			
-		elif (r == 0): 
+		elif (bias_in == 0): 
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
 			wrn_dialog.format_secondary_text("Please select a folder containing bias images")
 			response = wrn_dialog.run()
@@ -714,16 +714,85 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 		
 		else:
-			mc.master_creation(flat_in, flatdark_in, "flat", "flatdarks")
+			mc.master_creation(flat_in, flatdark_in, "flat", "flat_dark")
 
 	def master_retrieval(self,widget):
-		print("automatic master retrieval")
+		if (flat_in = 0) or (dark_in = 0):
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No files detected")
+			wrn_dialog.format_secondary_text("Please select a folder containing files in the appropraite tab and create a master")
+			response = wrn_dialog.run()
+			if response == Gtk.ResponseType.OK:
+				print("Warning Accepted")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Warning Cancelled")
+			wrn_dialog.destroy()
+		else: 
+			global master_dark
+			global master_flat
+			master_dark = fits.open(dark_in+"/Master_dark.fits")
+			master_flat = fits.open(flat_in+"/Master_flat.fits")
 			
 	def manual_master_dark(self,widget):
-		print("manual master dark selection")
+		if (master_dark != 0):
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL "Master Dark exists")
+			dialog.format_secondary_text("A Master Dark file has already been loaded, do you wish to replace it?")
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+				response = dialog.run()
+				if response == Gtk.ResponseType.OK:
+					master_dark_file = dialog.get_filename()
+					master_dark = fits.open(dark_in+"/Master_dark.fits")
+				elif response == Gtk.ResponseType.CANCEL:
+					print("Dark selection cancelled")
+					
+				dialog.destroy()
+			elif: response == Gtk.ResponseType.CANCEL:
+				print("Dark selection cancelled")
+				
+			dialog.destroy()
+			
+		else:
+			dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				master_dark_file = dialog.get_filename()
+				master_dark = fits.open(dark_in+"/Master_dark.fits")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Dark selection cancelled")
+				
+			dialog.destroy()
 		
 	def manual_master_flat(self,widget):
-		print("manual master flat selection")
+		if (master_flat != 0):
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL "Master Flat exists")
+			dialog.format_secondary_text("A Master Flat file has already been loaded, do you wish to replace it?")
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+				response = dialog.run()
+				if response == Gtk.ResponseType.OK:
+					master_dark_file = dialog.get_filename()
+					master_dark = fits.open(flat_in+"/Master_flat.fits")
+				elif response == Gtk.ResponseType.CANCEL:
+					print("Flat selection cancelled")
+					
+				dialog.destroy()
+			elif: response == Gtk.ResponseType.CANCEL:
+				print("Flat selection cancelled")
+				
+			dialog.destroy()
+			
+		else:
+			dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				master_dark_file = dialog.get_filename()
+				master_dark = fits.open(flat_in+"/Master_flat.fits")
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Flat selection cancelled")
+				
+			dialog.destroy()
 		
 	def darkflat_correction(self,widget):
 		print("darkflat correction")

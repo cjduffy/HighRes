@@ -1,6 +1,7 @@
 import gi
 import AVItoFITS as AtF
 import mastercreation as mc
+import darkflat as df
 from astropy.io import fits
 import numpy as np
 from PIL import Image
@@ -165,11 +166,11 @@ class MyWindow(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_clicked)
+		button1.connect("clicked",self.on_folder_3_clicked)
 		ver_box.add(button1)
 		
 		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_clicked)
+		button2.connect("clicked",self.on_file_3_clicked)
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field AVI to Frames")
@@ -213,11 +214,11 @@ class MyWindow(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_2_clicked)
+		button1.connect("clicked",self.on_folder_4_clicked)
 		ver_box.add(button1)
 		
 		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_2_clicked)
+		button2.connect("clicked",self.on_file_4_clicked)
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
@@ -279,11 +280,11 @@ class MyWindow(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_clicked)
+		button1.connect("clicked",self.on_folder_raw_clicked)
 		ver_box.add(button1)
 		
 		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_clicked)
+		button2.connect("clicked",self.on_file_raw_clicked)
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split AVI to Frames")
@@ -393,16 +394,35 @@ class MyWindow(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
-		global r
-		r = 0
-		global p 
-		p = 0
-		global l
-		l = 0
-		global m
-		m = 0
+		##default settings
+		global flat_in
+		flat_in = 0
+		global flatdark_in
+		flatdark_in = 0 
+		global dark_in
+		dark_in = 0
+		global bias_in 
+		bias_in = 0
+		global single_flat
+		single_flat = 0
+		global single_dark
+		single_dark = 0
+		global single_bias
+		single_bias = 0 
+		global single_flatdark
+		single_flatdark = 0
+		global raw_in
+		raw_in = 0
+		global single_raw
+		single_raw = 0
+		
 		global state
 		state = False
+		
+		global master_dark
+		master_dark = 0 
+		global master_flat
+		master_flat = 0 
 		
 	def on_folder_clicked(self, widget):
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
@@ -410,8 +430,8 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			global l
-			l = dialog.get_filename()
+			global dark_in
+			dark_in = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Folder Selection Cancelled")
 				
@@ -423,8 +443,47 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			global r
-			r = dialog.get_filename()
+			global bias_in
+			bias_in = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("Folder Selection Cancelled")
+				
+		dialog.destroy()
+		
+	def on_folder_3_clicked(self, widget):
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		dialog.set_default_size(800,400)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global flat_in
+			flat_in = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("Folder Selection Cancelled")
+				
+		dialog.destroy()
+		
+	def on_folder_4_clicked(self, widget):
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		dialog.set_default_size(800,400)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global flatdark_in
+			flatdark_in = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("Folder Selection Cancelled")
+				
+		dialog.destroy()
+		
+	def on_folder_raw_clicked(self, widget):
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		dialog.set_default_size(800,400)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global raw_in
+			raw_in = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Folder Selection Cancelled")
 				
@@ -437,8 +496,8 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			global m
-			m = dialog.get_filename()
+			global single_dark
+			single_dark = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("File Selection Cancelled")
 			
@@ -451,12 +510,48 @@ class MyWindow(Gtk.Window):
 			
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
-			global p
-			p = dialog.get_filename()
+			global single_bias
+			single_bias = dialog.get_filename()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("File Selection Cancelled")
 		
 		dialog.destroy()
+		
+	def on_file_3_clicked(self,widget):
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        		
+		self.add_filters(dialog)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global single_flat
+			single_flat = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("File Selection Cancelled")
+		
+	def on_file_4_clicked(self,widget):
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        		
+		self.add_filters(dialog)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global single_flatdark
+			single_flatdark = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("File Selection Cancelled")
+			
+	def on_file_raw_clicked(self,widget):
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        		
+		self.add_filters(dialog)
+			
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			global single_raw
+			single_raw = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			print("File Selection Cancelled")
 		
 	def add_filters(self, dialog):
 		filter_avi = Gtk.FileFilter()
@@ -477,13 +572,13 @@ class MyWindow(Gtk.Window):
 			state = False
 		
 	def begin_conversion(self, widget):
-		global l
-		global m
+		global raw_in
+		global single_raw
 		global state
-		if (l != 0):
-			n = AtF.avi_to_fits(group=l, switch=state, Imtype="frame")
-		if (m != 0):
-			o = AtF.avi_to_fits(single=m, switch=state, Imtype="frame")
+		if (raw_in != 0):
+			n = AtF.avi_to_fits(group=raw_in, switch=state, Imtype="frame")
+		if (single_raw != 0):
+			o = AtF.avi_to_fits(single=single_raw, switch=state, Imtype="frame")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -496,13 +591,13 @@ class MyWindow(Gtk.Window):
 			
 			
 	def begin_conversion_black(self, widget):
-		global l
-		global m
+		global dark_in
+		global single_dark
 		global state
-		if (l != 0):
-			n = AtF.avi_to_fits(group=l, switch=state, Imtype="dark")
-		if (m != 0):
-			o = AtF.avi_to_fits(single=m, switch=state, Imtype="dark")
+		if (dark_in != 0):
+			n = AtF.avi_to_fits(group=dark_in, switch=state, Imtype="dark")
+		if (single_dark != 0):
+			o = AtF.avi_to_fits(single=single_dark, switch=state, Imtype="dark")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -514,13 +609,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 			
 	def begin_conversion_grey(self, widget):
-		global r
-		global p
+		global bias_in
+		global single_bias
 		global state
-		if (r != 0):
-			q = AtF.avi_to_fits(group=l, switch=state, Imtype="bias")
-		if (p != 0):
-			t = AtF.avi_to_fits(single=m, switch=state, Imtype="bias")
+		if (bias_in != 0):
+			q = AtF.avi_to_fits(group=bias_in, switch=state, Imtype="bias")
+		if (single_bias != 0):
+			t = AtF.avi_to_fits(single=single_bias, switch=state, Imtype="bias")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -532,13 +627,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 			
 	def begin_conversion_white(self, widget):
-		global l
-		global m
+		global flat_in
+		global single_flat
 		global state
-		if (l != 0):
-			n = AtF.avi_to_fits(group=l, switch=state, Imtype="flat")
-		if (m != 0):
-			o = AtF.avi_to_fits(single=m, switch=state, Imtype="flat")
+		if (flat_in != 0):
+			n = AtF.avi_to_fits(group=flat_in, switch=state, Imtype="flat")
+		if (single_flat != 0):
+			o = AtF.avi_to_fits(single=single_flat, switch=state, Imtype="flat")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -550,13 +645,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 	
 	def begin_conversion_black_white(self, widget):
-		global r
-		global p
+		global flatdark_in
+		global single_flatdark
 		global state
-		if (r != 0):
-			q = AtF.avi_to_fits(group=l, switch=state, Imtype="flat_dark")
-		if (p != 0):
-			t = AtF.avi_to_fits(single=m, switch=state, Imtype="flat_dark")
+		if (flatdark_in != 0):
+			q = AtF.avi_to_fits(group=flatdark_in, switch=state, Imtype="flat_dark")
+		if (single_flatdark != 0):
+			t = AtF.avi_to_fits(single=single_flatdark, switch=state, Imtype="flat_dark")
 		else:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
 			wrn_dialog.format_secondary_text("Please Select a File or Folder")
@@ -568,8 +663,8 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 	
 	def create_thermal_master(self,widget):
-		global l
-		global r
+		global dark_in
+		global bias_in
 		
 		if (l == 0):
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
@@ -592,13 +687,13 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 		
 		else:
-			mc.master_creation(l, r, "dark", "bias")
+			mc.master_creation(dark_in, bias_in, "dark", "bias")
 			
 	def create_flat_master(self,widget):
-		global a
-		global b
+		global flat_in
+		global flatdark_in
 		
-		if (r == 0):
+		if (flat_in == 0):
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
 			wrn_dialog.format_secondary_text("Please select a folder containing flat fields")
 			response = wrn_dialog.run()
@@ -608,7 +703,7 @@ class MyWindow(Gtk.Window):
 				print("Warning Cancelled")
 			wrn_dialog.destroy()
 			
-		elif (p == 0): 
+		elif (flatdark_in == 0): 
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
 			wrn_dialog.format_secondary_text("Please select a folder containing flat darks")
 			response = wrn_dialog.run()
@@ -619,10 +714,10 @@ class MyWindow(Gtk.Window):
 			wrn_dialog.destroy()
 		
 		else:
-			mc.master_creation(r, p, "flat", "flatdarks")
+			mc.master_creation(flat_in, flatdark_in, "flat", "flatdarks")
 
 	def master_retrieval(self,widget):
-		print("master retrieval")
+		print("automatic master retrieval")
 			
 	def manual_master_dark(self,widget):
 		print("manual master dark selection")

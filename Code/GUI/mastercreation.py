@@ -10,7 +10,7 @@ def master_creation(folder, folder_2, Imtype, Imtype_2):
 	condition = True
 	condition_2 = True
 	
-	while condition = True: 
+	while condition == True: 
 		for file in dirs in folder:
 			filename = str(Imtype)+"1_1.fits"
 			if os.path_isfile(filename):
@@ -20,7 +20,7 @@ def master_creation(folder, folder_2, Imtype, Imtype_2):
 				image = np.zeros(size)
 				condition = False
 
-	while condition_2 = True:
+	while condition_2 == True:
 		for file in dirs in folder:
 			filename_2 = str(Imtype_2)+"1_1.fits"
 			if os.path_isfile(filename_2):

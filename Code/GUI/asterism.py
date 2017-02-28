@@ -33,6 +33,41 @@ class File_Folder_Dialog(Gtk.Dialog):
 class MyWindow(Gtk.Window):
 	
 	def __init__(self):
+		##default settings
+		global flat_in
+		flat_in = 0
+		global flatdark_in
+		flatdark_in = 0 
+		global dark_in
+		dark_in = 0
+		global bias_in 
+		bias_in = 0
+		global single_flat
+		single_flat = 0
+		global single_dark
+		single_dark = 0
+		global single_bias
+		single_bias = 0 
+		global single_flatdark
+		single_flatdark = 0
+		global raw_in
+		raw_in = 0
+		global single_raw
+		single_raw = 0
+		
+		global state
+		state = False
+		
+		global master_dark
+		master_dark = 0 
+		global master_flat
+		master_flat = 0 
+		
+		global exp_time
+		exp_time = 0
+		global master_exp_time
+		master_exp_time = 0 
+		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
 
@@ -157,6 +192,29 @@ class MyWindow(Gtk.Window):
 		button1 = Gtk.Button("Create Scalable Thermal Frame")
 		button1.connect("clicked", self.create_thermal_master)
 		ver_box.add(button1)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Exposure Time (ms):")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 700000, 1, 10, 0)
+		self.spinbutton = Gtk.SpinButton()
+		self.spinbutton.set_adjustment(adjustment)
+		self.spinbutton.set_digits(2)
+		self.spinbutton.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton.set_update_policy(policy)
+		self.spinbutton.connect("value-changed", self.on_master_exp_time_changed)
+		ver_box.pack_start(self.spinbutton, True, True, 0)
 		
 		listbox.add(row)
 		
@@ -327,6 +385,52 @@ class MyWindow(Gtk.Window):
 		
 		listbox.add(row)
 		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Raw FITS Data Selection")
+		head_box.pack_start(head_label, True, True, 0) 
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Select a folder containing FITS")
+		button1.connect("clicked", self.raw_folder_selection)
+		ver_box.add(button1)
+		
+		listbox.add(row)
+		
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Exposure Time (ms):")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 100000, 1, 10, 0)
+		self.spinbutton_2 = Gtk.SpinButton()
+		self.spinbutton_2.set_adjustment(adjustment)
+		self.spinbutton_2.set_digits(2)
+		self.spinbutton_2.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton_2.set_update_policy(policy)
+		self.spinbutton_2.connect("value-changed", self.on_exp_time_changed)
+		ver_box.pack_start(self.spinbutton_2, True, True, 0)
+		
+		listbox.add(row)
+		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
 		listbox = Gtk.ListBox()
@@ -409,41 +513,6 @@ class MyWindow(Gtk.Window):
 		image = Gtk.Image()
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
-		
-		##default settings
-		global flat_in
-		flat_in = 0
-		global flatdark_in
-		flatdark_in = 0 
-		global dark_in
-		dark_in = 0
-		global bias_in 
-		bias_in = 0
-		global single_flat
-		single_flat = 0
-		global single_dark
-		single_dark = 0
-		global single_bias
-		single_bias = 0 
-		global single_flatdark
-		single_flatdark = 0
-		global raw_in
-		raw_in = 0
-		global single_raw
-		single_raw = 0
-		
-		global state
-		state = False
-		
-		global master_dark
-		master_dark = 0 
-		global master_flat
-		master_flat = 0 
-		
-		global exp_time
-		exp_time = 0
-		global master_exp_time
-		master_exp_time = 0 
 		
 	def on_folder_clicked(self, widget):
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
@@ -1070,6 +1139,7 @@ class MyWindow(Gtk.Window):
 						
 						dialog = File_Folder_Dialog(self)
 						response = dialog.run()
+						dialog.destroy()
 						if response == Gtk.ResponseType.CANCEL:
 							print("Cancelling")
 							dialog.destroy()
@@ -1079,6 +1149,7 @@ class MyWindow(Gtk.Window):
 							response = dialog.run()
 							if response == Gtk.ResponseType.OK:
 								single_raw = dialog.get_filename()
+								dialog.destroy()
 							elif response == Gtk.ResponseType.CANCEL:
 								dialog.destroy()
 								checking_condition = False 
@@ -1089,6 +1160,7 @@ class MyWindow(Gtk.Window):
 							response = dialog.run()
 							if response == Gtk.ResponseType.OK:
 								raw_in = dialog.get_filename()
+								dialog.destroy()
 							elif response == Gtk.ResponseType.CANCEL:
 								dialog.destroy()
 								checking_condition = False
@@ -1111,6 +1183,18 @@ class MyWindow(Gtk.Window):
 				print("darkflat continues")
 				df.darkflat(master_flat, master_dark, raw_style, exp_time, master_exp_time)
 				checking_condition = False
+				
+	def raw_folder_selection(self,widget): 
+		print("raw_folder")
+		
+	def on_exp_time_changed(self,widget):
+		global exp_time
+		exp_time = self.spinbutton_2.get_value()
+		
+	def on_master_exp_time_changed(self,widget): 
+		global master_exp_time
+		master_exp_time = self.spinbutton.get_value()
+		
 				
 			
 win = MyWindow()

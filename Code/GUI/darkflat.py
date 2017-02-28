@@ -1,16 +1,17 @@
-def darkflat(Flat, Dark, Raw, Exp_Time, Master_Exp_Time): 
+def darkflat(flat_field, dark_current, raw_image, exp_time, master_exp_time):
+	
+	##Function takes previously opened Flat, Dark, and Raw images, along with exposure time to perform the darkflat corrections. 
 	
 	import os
 	from astropy.io import fits
 	import numpy as np
 	
-	#Image Read ins
-	flat_field = fits.open(Flat)
-	dark_current = fits.open(Dark)
-	raw_image = fits.open(Raw)
+	#Scale Dark Current
+	scaling_factor = np.divide(exp_time, master_exp_time)
+	scaled_dark_current = np.multiply(scaling_factor, dark_current)
 	
 	#Perform Correction
-	dark_sub = np.subtract(raw_image, dark_current)
+	dark_sub = np.subtract(raw_image, scaled_dark_current)
 	cor_image = np.divide(dark_sub, flat_field)
 	
 	#Write Corections

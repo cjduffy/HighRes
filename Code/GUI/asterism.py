@@ -14,6 +14,22 @@ from gi.repository import GdkPixbuf
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
+class File_Folder_Dialog(Gtk.Dialog):
+
+    def __init__(self, parent):
+        Gtk.Dialog.__init__(self, "No input detected", parent, 0,
+            ("Folder", Gtk.ResponseType.ACCEPT,
+             "File", Gtk.ResponseType.OK,
+             "Cancel", Gtk.ResponseType.CANCEL))
+
+        self.set_default_size(150, 100)
+
+        label = Gtk.Label("Please Select Either a File or Folder")
+
+        box = self.get_content_area()
+        box.add(label)
+        self.show_all()
+
 class MyWindow(Gtk.Window):
 	
 	def __init__(self):
@@ -222,7 +238,7 @@ class MyWindow(Gtk.Window):
 		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_white)
+		button3.connect("clicked", self.begin_conversion_black_white)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -424,6 +440,11 @@ class MyWindow(Gtk.Window):
 		global master_flat
 		master_flat = 0 
 		
+		global exp_time
+		exp_time = 0
+		global master_exp_time
+		master_exp_time = 0 
+		
 	def on_folder_clicked(self, widget):
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
 		dialog.set_default_size(800,400)
@@ -553,6 +574,8 @@ class MyWindow(Gtk.Window):
 		elif response == Gtk.ResponseType.CANCEL:
 			print("File Selection Cancelled")
 		
+		dialog.destroy()
+		
 	def add_filters(self, dialog):
 		filter_avi = Gtk.FileFilter()
 		filter_avi.set_name("AVI Files")
@@ -575,92 +598,239 @@ class MyWindow(Gtk.Window):
 		global raw_in
 		global single_raw
 		global state
-		if (raw_in != 0):
-			n = AtF.avi_to_fits(group=raw_in, switch=state, Imtype="frame")
-		if (single_raw != 0):
-			o = AtF.avi_to_fits(single=single_raw, switch=state, Imtype="frame")
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
+		condition = True
+	
+		while condition == True:
+			if (raw_in != 0):
+				n = AtF.avi_to_fits(group=raw_in, switch=state, Imtype="frame")
+				condition = False
+			if (single_raw != 0):
+				o = AtF.avi_to_fits(single=single_raw, switch=state, Imtype="frame")
+				condition = False
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+				wrn_dialog.format_secondary_text("Please Select a File or Folder")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = File_Folder_Dialog(self)
+					response = dialog.run()
+					if response == Gtk.ResponseType.CANCEL:
+						print("Cancelling")
+						dialog.destroy()
+						condition = False
+					elif response == Gtk.ResponseType.OK:
+						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							single_raw = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False 
+						dialog.destroy()
+						
+					elif response == Gtk.ResponseType.ACCEPT:
+						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							raw_in = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False
+						dialog.destroy()
+					dialog.destroy()
+						
+					
+				elif response == Gtk.ResponseType.CANCEL:
+					condition = False
 			
 			
 	def begin_conversion_black(self, widget):
 		global dark_in
 		global single_dark
 		global state
-		if (dark_in != 0):
-			n = AtF.avi_to_fits(group=dark_in, switch=state, Imtype="dark")
-		if (single_dark != 0):
-			o = AtF.avi_to_fits(single=single_dark, switch=state, Imtype="dark")
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
+		condition = True
+	
+		while condition == True:
+			if (dark_in != 0):
+				n = AtF.avi_to_fits(group=dark_in, switch=state, Imtype="dark")
+				condition = False
+			if (single_dark != 0):
+				o = AtF.avi_to_fits(single=single_dark, switch=state, Imtype="dark")
+				condition = False
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+				wrn_dialog.format_secondary_text("Please Select a File or Folder")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = File_Folder_Dialog(self)
+					response = dialog.run()
+					if response == Gtk.ResponseType.CANCEL:
+						print("Cancelling")
+						dialog.destroy()
+						condition = False
+					elif response == Gtk.ResponseType.OK:
+						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							single_dark = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False 
+						dialog.destroy()
+						
+					elif response == Gtk.ResponseType.ACCEPT:
+						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							dark_in = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False
+						dialog.destroy()
+					dialog.destroy()
+					
+				elif response == Gtk.ResponseType.CANCEL:
+					condition = False
 			
 	def begin_conversion_grey(self, widget):
 		global bias_in
 		global single_bias
 		global state
-		if (bias_in != 0):
-			q = AtF.avi_to_fits(group=bias_in, switch=state, Imtype="bias")
-		if (single_bias != 0):
-			t = AtF.avi_to_fits(single=single_bias, switch=state, Imtype="bias")
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
+		condition = True
+	
+		while condition == True:
+			if (bias_in != 0):
+				n = AtF.avi_to_fits(group=bias_in, switch=state, Imtype="bias")
+				condition = False
+			if (single_bias != 0):
+				o = AtF.avi_to_fits(single=single_bias, switch=state, Imtype="bias")
+				condition = False
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+				wrn_dialog.format_secondary_text("Please Select a File or Folder")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = File_Folder_Dialog(self)
+					response = dialog.run()
+					if response == Gtk.ResponseType.CANCEL:
+						print("Cancelling")
+						dialog.destroy()
+						condition = False
+					elif response == Gtk.ResponseType.OK:
+						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							single_bias = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False 
+						dialog.destroy()
+						
+					elif response == Gtk.ResponseType.ACCEPT:
+						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							bias_in = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False
+						dialog.destroy()
+					dialog.destroy()
+					
+				elif response == Gtk.ResponseType.CANCEL:
+					condition = False
 			
 	def begin_conversion_white(self, widget):
 		global flat_in
 		global single_flat
 		global state
-		if (flat_in != 0):
-			n = AtF.avi_to_fits(group=flat_in, switch=state, Imtype="flat")
-		if (single_flat != 0):
-			o = AtF.avi_to_fits(single=single_flat, switch=state, Imtype="flat")
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
+		condition = True
+	
+		while condition == True:
+			if (flat_in != 0):
+				n = AtF.avi_to_fits(group=flat_in, switch=state, Imtype="flat")
+				condition = False
+			if (single_flat != 0):
+				o = AtF.avi_to_fits(single=single_flat, switch=state, Imtype="flat")
+				condition = False
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+				wrn_dialog.format_secondary_text("Please Select a File or Folder")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = File_Folder_Dialog(self)
+					response = dialog.run()
+					if response == Gtk.ResponseType.CANCEL:
+						print("Cancelling")
+						dialog.destroy()
+						condition = False
+					elif response == Gtk.ResponseType.OK:
+						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							single_flat = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False 
+						dialog.destroy()
+						
+					elif response == Gtk.ResponseType.ACCEPT:
+						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							flat_in = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False
+						dialog.destroy()
+					dialog.destroy()
+						
+					
+				elif response == Gtk.ResponseType.CANCEL:
+					condition = False
 	
 	def begin_conversion_black_white(self, widget):
 		global flatdark_in
 		global single_flatdark
 		global state
-		if (flatdark_in != 0):
-			q = AtF.avi_to_fits(group=flatdark_in, switch=state, Imtype="flat_dark")
-		if (single_flatdark != 0):
-			t = AtF.avi_to_fits(single=single_flatdark, switch=state, Imtype="flat_dark")
-		else:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-			wrn_dialog.format_secondary_text("Please Select a File or Folder")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
+		condition = True
+	
+		while condition == True:
+			if (flatdark_in != 0):
+				n = AtF.avi_to_fits(group=flatdark_in, switch=state, Imtype="flat_dark")
+				condition = False
+			if (single_flatdark != 0):
+				o = AtF.avi_to_fits(single=singleflat_dark, switch=state, Imtype="flat_dark")
+				condition = False
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
+				wrn_dialog.format_secondary_text("Please Select a File or Folder")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = File_Folder_Dialog(self)
+					response = dialog.run()
+					if response == Gtk.ResponseType.CANCEL:
+						print("Cancelling")
+						dialog.destroy()
+						condition = False
+					elif response == Gtk.ResponseType.OK:
+						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							single_flatdark = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False 
+						dialog.destroy()
+						
+					elif response == Gtk.ResponseType.ACCEPT:
+						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response = dialog.run()
+						if response == Gtk.ResponseType.OK:
+							flatdark_in = dialog.get_filename()
+						elif response == Gtk.ResponseType.CANCEL:
+							condition = False
+						dialog.destroy()
+					dialog.destroy()
+					
+				elif response == Gtk.ResponseType.CANCEL:
+					condition = False
 	
 	def create_thermal_master(self,widget):
 		global dark_in
@@ -717,7 +887,7 @@ class MyWindow(Gtk.Window):
 			mc.master_creation(flat_in, flatdark_in, "flat", "flat_dark")
 
 	def master_retrieval(self,widget):
-		if (flat_in = 0) or (dark_in = 0):
+		if (flat_in == 0) or (dark_in == 0):
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No files detected")
 			wrn_dialog.format_secondary_text("Please select a folder containing files in the appropraite tab and create a master")
 			response = wrn_dialog.run()
@@ -733,69 +903,215 @@ class MyWindow(Gtk.Window):
 			master_flat = fits.open(flat_in+"/Master_flat.fits")
 			
 	def manual_master_dark(self,widget):
+		global master_dark
+		
 		if (master_dark != 0):
-			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL "Master Dark exists")
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Dark exists")
 			dialog.format_secondary_text("A Master Dark file has already been loaded, do you wish to replace it?")
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
-				dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+				dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 				response = dialog.run()
 				if response == Gtk.ResponseType.OK:
 					master_dark_file = dialog.get_filename()
-					master_dark = fits.open(dark_in+"/Master_dark.fits")
+					master_dark = fits.open(master_dark_file)
 				elif response == Gtk.ResponseType.CANCEL:
 					print("Dark selection cancelled")
 					
 				dialog.destroy()
-			elif: response == Gtk.ResponseType.CANCEL:
+			elif response == Gtk.ResponseType.CANCEL:
 				print("Dark selection cancelled")
 				
 			dialog.destroy()
 			
 		else:
-			dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+			dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				master_dark_file = dialog.get_filename()
-				master_dark = fits.open(dark_in+"/Master_dark.fits")
+				master_dark = fits.open(master_dark_file)
 			elif response == Gtk.ResponseType.CANCEL:
 				print("Dark selection cancelled")
 				
 			dialog.destroy()
 		
 	def manual_master_flat(self,widget):
+		global master_flat
+		
 		if (master_flat != 0):
-			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL "Master Flat exists")
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Flat exists")
 			dialog.format_secondary_text("A Master Flat file has already been loaded, do you wish to replace it?")
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
 				response = dialog.run()
 				if response == Gtk.ResponseType.OK:
-					master_dark_file = dialog.get_filename()
-					master_dark = fits.open(flat_in+"/Master_flat.fits")
+					master_flat_file = dialog.get_filename()
+					master_flat = fits.open(master_flat_file)
 				elif response == Gtk.ResponseType.CANCEL:
 					print("Flat selection cancelled")
 					
 				dialog.destroy()
-			elif: response == Gtk.ResponseType.CANCEL:
+			elif response == Gtk.ResponseType.CANCEL:
 				print("Flat selection cancelled")
 				
 			dialog.destroy()
 			
 		else:
-			dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+			dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
-				master_dark_file = dialog.get_filename()
-				master_dark = fits.open(flat_in+"/Master_flat.fits")
+				master_flat_file = dialog.get_filename()
+				master_flat = fits.open(master_dark_file)
 			elif response == Gtk.ResponseType.CANCEL:
 				print("Flat selection cancelled")
 				
 			dialog.destroy()
 		
 	def darkflat_correction(self,widget):
-		print("darkflat correction")
+		global master_dark
+		global master_flat
+		global raw_in
+		global single_raw
+		global exp_time
+		global master_exp_time
+		raw_style = 0
+		
+		checking_condition = True
+		
+		while checking_condition == True:
+			if (master_dark == 0):
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No dark current file found")
+				wrn_dialog.format_secondary_text("Missing a master, or a single, dark image. Select one now?")
+				response = wrn_dialog.run()
+				condition = True
+				while condition == True: 
+					if response == Gtk.ResponseType.OK:
+						wrn_dialog.destroy()
+						dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response_2 = dialog.run()
+						if response_2 == Gtk.ResponseType.OK:
+							master_dark_filename = dialog.get_filename()
+							if master_dark_filename.endswith(".fits"):
+								master_dark = fits.open(master_dark_filename)
+								condition = False
+							else:
+								wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Invalid filetype")
+								wrn_dialog.format_secondary_text("Please select a FITS file")
+								response_3 = wrn_dialog.run()
+								if response_3 == Gtk.ResponseType.OK:
+									pass
+								elif response_3 == Gtk.ResponseType.CANCEL:
+									print("correction progress cancelled")
+									condition = False
+									checking_condition = False
+								wrn_dialog.destroy()
+							dialog.destroy()
+						elif response_2 == Gtk.ResponseType.CANCEL:
+							print("correction progress cancelled")
+							condition = False
+							checking_condition = False
+							dialog.destroy()
+						dialog.destroy()
+					elif response == Gtk.ResponseType.CANCEL:
+						print("correction progress cancelled")
+						condition = False
+						checking_condition = False
+						
+				wrn_dialog.destroy()
+				
+			elif (master_flat == 0):
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No flat field file found")
+				wrn_dialog.format_secondary_text("Missing a master, or a single, flat field image. Select one now?")
+				response = wrn_dialog.run()
+				condition = True
+				while condition == True: 
+					if response == Gtk.ResponseType.OK:
+						wrn_dialog.destroy()
+						dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+						response_2 = dialog.run()
+						if response_2 == Gtk.ResponseType.OK:
+							master_flat_filename = dialog.get_filename()
+							if master_flat_filename.endswith(".fits"):
+								master_flat = fits.open(master_flat_filename)
+								condition = False
+							else:
+								wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Invalid filetype")
+								wrn_dialog.format_secondary_text("Please select a FITS file")
+								response_3 = wrn_dialog.run()
+								if response_3 == Gtk.ResponseType.OK:
+									condition = True
+								elif response_3 == Gtk.ResponseType.CANCEL:
+									print("correction progress cancelled")
+									condition = False
+									checking_condition = False
+								wrn_dialog.destroy()
+								dialog.destroy()
+						elif response_2 == Gtk.ResponseType.CANCEL:
+							print("correction progress cancelled")
+							condition = False
+							checking_condition = False
+							dialog.destroy()
+						dialog.destroy()
+					elif response == Gtk.ResponseType.CANCEL:
+						print("correction progress cancelled")
+						condition = False
+						checking_condition = False
+						
+				wrn_dialog.destroy()
+				
+			elif (raw_style == 0):
+				if (raw_in == 0):
+					if (single_raw == 0): 
+						info_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Raw File(s)")
+						info_dialog.format_secondary_text("Please select a file or folder")
+						info_dialog.run()
+						info_dialog.destroy()
+						
+						dialog = File_Folder_Dialog(self)
+						response = dialog.run()
+						if response == Gtk.ResponseType.CANCEL:
+							print("Cancelling")
+							dialog.destroy()
+							checking_condition = False
+						elif response == Gtk.ResponseType.OK:
+							dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+							response = dialog.run()
+							if response == Gtk.ResponseType.OK:
+								single_raw = dialog.get_filename()
+							elif response == Gtk.ResponseType.CANCEL:
+								dialog.destroy()
+								checking_condition = False 
+							dialog.destroy()
+							
+						elif response == Gtk.ResponseType.ACCEPT:
+							dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+							response = dialog.run()
+							if response == Gtk.ResponseType.OK:
+								raw_in = dialog.get_filename()
+							elif response == Gtk.ResponseType.CANCEL:
+								dialog.destroy()
+								checking_condition = False
+							dialog.destroy()
+						dialog.destroy()
+							
+					else:
+						raw_style = single_raw
+				else:
+					raw_style = raw_in
+				
+			elif (exp_time == 0) or (master_exp_time == 0): 
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Exposure Time is Zero")
+				wrn_dialog.format_secondary_text("Either the master dark exposure time is zero, or the raw image exposure time is zero, please give an exposure time and rerun")
+				wrn_dialog.run()
+				checking_condition = False
+				wrn_dialog.destroy()
+				
+			else: 
+				print("darkflat continues")
+				df.darkflat(master_flat, master_dark, raw_style, exp_time, master_exp_time)
+				checking_condition = False
+				
 			
 win = MyWindow()
 win.connect("delete-event", Gtk.main_quit)

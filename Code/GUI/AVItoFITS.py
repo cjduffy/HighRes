@@ -24,8 +24,8 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 			
 			#construct the filenames
 				filepath = os.path.dirname(os.path.realpath(single))
-				filename_tif = filepath+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
-				filename_fits = filepath+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
+				filename_tif = filepath+"/"+single+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
+				filename_fits = filepath+"/"+single+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
 			
 			#write the TIF
 				cv2.imwrite(filename_tif,frame)
@@ -62,8 +62,8 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 						
 			
 			#construct the filenames
-					filename_tif = group+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
-					filename_fits = group+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
+					filename_tif = group+"/"+file+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
+					filename_fits = group+"/"+file+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
 			
 			#write the TIF
 					cv2.imwrite(filename_tif,frame)

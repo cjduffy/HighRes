@@ -20,5 +20,10 @@ phase_image_2 = np.imag(transform_image_2)
 SPOMF = np.subtract(phase_image_2, phase_image_1)
 iSPMF = ifft2(SPOMF)
 
+rotation, scale = np.unravel_index(np.argmax(iSPMF), iSPMF.shape)
+scaling_factor = np.exp(scale)
 
+scaled_image = np.divide(image2, scaling_factor)
+scaled_image_2 = scaled_image
+ 
 

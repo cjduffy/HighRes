@@ -1050,7 +1050,7 @@ class MyWindow(Gtk.Window):
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				master_flat_file = dialog.get_filename()
-				master_flat = fits.open(master_dark_file)
+				master_flat = fits.open(master_flat_file)
 			elif response == Gtk.ResponseType.CANCEL:
 				print("Flat selection cancelled")
 				

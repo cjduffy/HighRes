@@ -326,7 +326,7 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
-		button1 = Gtk.Button("Create Master Flat Field")
+		button1 = Gtk.Button("Create Scalable Flat Field")
 		button1.connect("clicked", self.create_flat_master)
 		ver_box.add(button1)
 		

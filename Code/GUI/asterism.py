@@ -440,6 +440,25 @@ class MyWindow(Gtk.Window):
 		
 		head_box = Gtk.Box()
 		row.add(head_box)
+		label = Gtk.Label("Lucky Frame Selection Method")
+		head_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		##To add. Radio Buttons to please Kristoff. Select whether one wants Sobel filter method or Fisher Sum method. If possible, add in a system to add another python function in that runs instead. Additionally a button that actually starts the process. A spinbutton to determine the percentage. 
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Lucky Frame Selection", "Lucky Frame Selection")
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
 		head_label = Gtk.Label("Automatic Master Retrieval")
 		head_box.pack_start(head_label, True, True, 0)
 		
@@ -451,7 +470,7 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
-		button1 = Gtk.Button("Retrieve Created Masters & Correct")
+		button1 = Gtk.Button("Retrieve Created Masters")
 		button1.connect("clicked", self.master_retrieval)
 		ver_box.pack_start(button1, True, True, 0)
 		
@@ -1185,7 +1204,13 @@ class MyWindow(Gtk.Window):
 				checking_condition = False
 				
 	def raw_folder_selection(self,widget): 
-		print("raw_folder")
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			raw_in = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			pass
+		dialog.destroy()
 		
 	def on_exp_time_changed(self,widget):
 		global exp_time

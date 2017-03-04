@@ -20,6 +20,7 @@ center2 = np.divide((image2.size), 2)
 
 ##Convert to logpolar
 ##There is something wrong here, the documentatoin is non existant, I might actually be foreced to ask stackoverflow
+##Might just be best to write out the maths of this manuaually using formula laid out by wikipedia.
 LP1 = cv2.logPolar(data1, center1, 0.1,[cv2.WARP_FILL_OUTLIERS, 1])
 LP2 = cv2.logPolar(data2, center2, 10, [cv2.WARP_FILL_OUTLIERS, 1])
 

@@ -1,6 +1,7 @@
 import gi
 import AVItoFITS as AtF
 import mastercreation as mc
+import luckyframeselection as lfs
 import darkflat as df
 from astropy.io import fits
 import numpy as np
@@ -66,7 +67,9 @@ class MyWindow(Gtk.Window):
 		global exp_time
 		exp_time = 0
 		global master_exp_time
-		master_exp_time = 0 
+		master_exp_time = 0
+		global percentage
+		percentage = 0
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -433,6 +436,8 @@ class MyWindow(Gtk.Window):
 		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
+		##Still to add: Add in a non-deleting method for those that want to keep all data
+		
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		
@@ -446,7 +451,54 @@ class MyWindow(Gtk.Window):
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
 		
-		##To add. Radio Buttons to please Kristoff. Select whether one wants Sobel filter method or Fisher Sum method. If possible, add in a system to add another python function in that runs instead. Additionally a button that actually starts the process. A spinbutton to determine the percentage. 
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Sobel Method")
+		button1.connect("toggled", self.on_methodology_changed, "Sobel")
+		ver_box.pack_start(button1, True, True, 0)
+		
+		button2 = Gtk.RadioButton.new_from_widget(button1)
+		button2.set_label("Fisher Selection")
+		button2.connect("toggled", self.on_methodology_changed, "Fisher")
+		ver_box.pack_start(button2, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Lower Percentage Limit:")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.spinbutton_3 = Gtk.SpinButton()
+		self.spinbutton_3.set_adjustment(adjustment)
+		self.spinbutton_3.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton_3.set_update_policy(policy)
+		self.spinbutton_3.connect("value-changed", self.on_percent_changed)
+		ver_box.pack_start(self.spinbutton_3, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=50)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Select Lucky Frames")
+		button1.connect("clicked", self.luckframeselection)
+		hor_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
 		
@@ -997,6 +1049,7 @@ class MyWindow(Gtk.Window):
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Dark exists")
 			dialog.format_secondary_text("A Master Dark file has already been loaded, do you wish to replace it?")
 			response = dialog.run()
+			dialog.destroy()
 			if response == Gtk.ResponseType.OK:
 				dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 				response = dialog.run()
@@ -1030,8 +1083,9 @@ class MyWindow(Gtk.Window):
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Flat exists")
 			dialog.format_secondary_text("A Master Flat file has already been loaded, do you wish to replace it?")
 			response = dialog.run()
+			dialog.destroy()
 			if response == Gtk.ResponseType.OK:
-				dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK)
+				dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 				response = dialog.run()
 				if response == Gtk.ResponseType.OK:
 					master_flat_file = dialog.get_filename()
@@ -1219,6 +1273,22 @@ class MyWindow(Gtk.Window):
 	def on_master_exp_time_changed(self,widget): 
 		global master_exp_time
 		master_exp_time = self.spinbutton.get_value()
+		
+	def on_methodology_changed(self, button, name):
+		if button.get_active():
+			if name == "Sobel":
+				print("Sobel On")
+			elif name == "Fisher":
+				print("Fisher On")
+		else:
+			print("Present state is", name)
+			
+	def on_percent_changed(self,widget):
+		global percentage
+		percentage = self.spinbutton_3.get_value()
+		
+	def luckframeselection(self,widget):
+		print("lucky frame selection process")
 		
 				
 			

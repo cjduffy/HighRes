@@ -1,4 +1,4 @@
-def fisher_selection(folder, percentage):
+def fisher_selection(folder, percentage, state="Delete"):
 	import numpy as np
 	import os
 	from astropy.io import FITS
@@ -34,14 +34,22 @@ def fisher_selection(folder, percentage):
 		
 	maximum = max(Fisher_Sum)
 	
+	if state == "Retain":
+		if not os.path.exists(folder/lucky_frames):
+			os.mkdir(folder/lucky_frames)
+
 	for file in folder:
 		if file.endswith(".fits"):
 			percent = Fisher_Sum[x] / maximum
 			if percent < percentage:
-				os.remove(file)
+				if state == "Delete":
+					os.remove(file)
+				elif state == "Retain":
+					destination = folder+"/"+"lucky_frames/"+file
+					os.rename(file, destination)
 			x += 1
 			
-def sobel_selection(folder, percentage):
+def sobel_selection(folder, percentage, state="Delete"):
 	import numpy as np 
 	import os
 	from astropy.io import FITS
@@ -66,12 +74,20 @@ def sobel_selection(folder, percentage):
 		
 	maximum = max(sobel_number)
 	
+	if state == "Retain":
+		if not os.path.exists(folder/lucky_frames):
+			os.mkdir(folder/lucky_frames)
+
 	for file in folder:
 		if file.endswith(".fits"):
-			percent = sobel_number[x] / maximum
+			percent = Fisher_Sum[x] / maximum
 			if percent < percentage:
-				os.remove(file)
-			x += 1 
+				if state == "Delete":
+					os.remove(file)
+				elif state == "Retain":
+					destination = folder+"/"+"lucky_frames/"+file
+					os.rename(file, destination)
+			x += 1
 			
 			
 		

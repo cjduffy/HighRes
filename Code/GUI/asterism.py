@@ -58,6 +58,8 @@ class MyWindow(Gtk.Window):
 		
 		global state
 		state = False
+		global luck_delete
+		luck_delete = "Delete"
 		
 		global master_dark
 		master_dark = 0 
@@ -70,6 +72,8 @@ class MyWindow(Gtk.Window):
 		master_exp_time = 0
 		global percentage
 		percentage = 0
+		global methodology
+		methodology = "Sobel"
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -493,12 +497,29 @@ class MyWindow(Gtk.Window):
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
 		
+		label = Gtk.Label("Delete Non-Lucky Frames?")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.luckframedelete)
+		switch.set_active(True)
+		ver_box.pack_start(switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=50)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select Lucky Frames")
 		button1.connect("clicked", self.luckframeselection)
-		hor_box.pack_start(button1, True, True, 0)
+		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
 		
@@ -1258,6 +1279,7 @@ class MyWindow(Gtk.Window):
 				checking_condition = False
 				
 	def raw_folder_selection(self,widget): 
+		global raw_in
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
@@ -1275,11 +1297,12 @@ class MyWindow(Gtk.Window):
 		master_exp_time = self.spinbutton.get_value()
 		
 	def on_methodology_changed(self, button, name):
+		global methodology
 		if button.get_active():
 			if name == "Sobel":
-				print("Sobel On")
+				methodology = "Sobel"
 			elif name == "Fisher":
-				print("Fisher On")
+				methodology = "Fisher"
 		else:
 			print("Present state is", name)
 			
@@ -1288,8 +1311,53 @@ class MyWindow(Gtk.Window):
 		percentage = self.spinbutton_3.get_value()
 		
 	def luckframeselection(self,widget):
-		print("lucky frame selection process")
+		global percentage
+		global methodology
+		global raw_in
+		global luck_delete
+		checker = True
 		
+		while checker == True:
+			if raw_in == 0:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No RAW folder")
+				wrn_dialog.format_secondary_text("Select a folder to convert")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+					response_2 = dialog.run()
+					if response_2 == Gtk.ResponseType.OK:
+						raw_in = dialog.get_filename()
+						dialog.destroy()
+						checker = False 
+					elif response_2 == Gtk.ResponseType.CANCEL:
+						dialog.destroy() 
+						checker = False
+				elif response == Gtk.ResponseType.CANCEL:
+					checker = False
+		
+		if raw_in == 0:
+			print("no raw data")
+						
+		elif percentage == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Percentage zero")
+			wrn_dialog.format_secondary_text("Lower percentage threshold not set")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			
+		else:
+			if methodology == "Sobel":
+				lfs.sobel_selection(raw_in, percentage, luck_delete)
+			elif methodology == "Fisher":
+				lfs.fisher_slection(raw_in, percentage, luck_delete)
+		
+	def luckframedelete(self, switch, gparam):
+		global luck_delete
+		
+		if switch.get_active():
+			luck_delete = "delete"
+		else:
+			luck_delete = "retain"
 				
 			
 win = MyWindow()

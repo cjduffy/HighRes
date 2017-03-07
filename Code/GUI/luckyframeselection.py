@@ -34,8 +34,8 @@ def fisher_selection(folder, percentage):
 		
 	maximum = max(Fisher_Sum)
 	
-	for file in folder
-		if file.endswith(".fits")
+	for file in folder:
+		if file.endswith(".fits"):
 			percent = Fisher_Sum[x] / maximum
 			if percent < percentage:
 				os.remove(file)

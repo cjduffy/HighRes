@@ -595,12 +595,140 @@ class MyWindow(Gtk.Window):
 		
 		stack.add_titled(listbox, "Master Flat & Dark Correction", "Master Flat & Dark Correction")
 		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE) 
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Hot Pixel Correction System")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Automatic Correction")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Perform Automatic Hot-Pixel Correction")
+		button1.connect("clicked", self.auto_hot_pixel)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Manual Correction")
+		box.pack_start(label, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Histogram Generation")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Number of Sample Histograms to Generate:")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.spinbutton_4 = Gtk.SpinButton()
+		self.spinbutton_4.set_adjustment(adjustment)
+		self.spinbutton_4.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton_4.set_update_policy(policy)
+		self.spinbutton_4.connect("value-changed", self.histogram_number)
+		ver_box.pack_start(self.spinbutton_4, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Generate First Histogram")
+		button1.connect("clicked", self.gen_hist_one)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		label = Gtk.Label("Widget containing histogram plots to go here. Widget should also contain a contextual spinbutton so that one can input a value for each histogram.")
+		label.set_line_wrap(True)
+		head_box.pack_start(label, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		row.add(ver_box)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		ver_box.pack_start(hor_box, True, True, 0)
+		
+		button1 = Gtk.Button("Previous Histogram")
+		button1.connect("clicked", self.gen_prev_hist)
+		hor_box.pack_start(button1, True, True, 0)
+		
+		button2 = Gtk.Button("Next Histogram")
+		button2.connect("clicked", self.gen_next_hist)
+		hor_box.pack_start(button2, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Correct Hot Pixels")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Perform Hot Pixel Correction")
+		button1.connect("clicked", self.man_hot_pixel)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Hot Pixel Correction", "Hot Pixel Correction")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
 		outer_box.pack_end(stack, True, True, 0)
 
-		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 600, 900, True)
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 725, 1200, True)
 		
 		image = Gtk.Image()
 		image.set_from_pixbuf(pixbuf)
@@ -1358,6 +1486,24 @@ class MyWindow(Gtk.Window):
 			luck_delete = "delete"
 		else:
 			luck_delete = "retain"
+	
+	def auto_hot_pixel(self, widget):
+		print("auto hot pixel")
+		
+	def histogram_number(self, widget):
+		histogram_no = self.spinbutton_4.get_value()
+		
+	def gen_hist_one(self,widget):
+		print("gen hist one")
+		
+	def gen_prev_hist(self,widget):
+		print("gen prev hist")
+		
+	def gen_next_hist(self,widget):
+		print("gen next hist")
+		
+	def man_hot_pixel(self, widget):
+		print("manual hot pixel")
 				
 			
 win = MyWindow()

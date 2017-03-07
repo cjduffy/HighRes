@@ -58,6 +58,8 @@ class MyWindow(Gtk.Window):
 		
 		global state
 		state = False
+		global luck_delete
+		luck_delete = "Delete"
 		
 		global master_dark
 		master_dark = 0 
@@ -70,6 +72,8 @@ class MyWindow(Gtk.Window):
 		master_exp_time = 0
 		global percentage
 		percentage = 0
+		global methodology
+		methodology = "Sobel"
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -493,12 +497,29 @@ class MyWindow(Gtk.Window):
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
 		
+		label = Gtk.Label("Delete Non-Lucky Frames?")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		switch = Gtk.Switch()
+		switch.connect("notify::active", self.luckframedelete)
+		switch.set_active(True)
+		ver_box.pack_start(switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=50)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select Lucky Frames")
 		button1.connect("clicked", self.luckframeselection)
-		hor_box.pack_start(button1, True, True, 0)
+		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
 		
@@ -574,12 +595,140 @@ class MyWindow(Gtk.Window):
 		
 		stack.add_titled(listbox, "Master Flat & Dark Correction", "Master Flat & Dark Correction")
 		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE) 
+		
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Hot Pixel Correction System")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Automatic Correction")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Perform Automatic Hot-Pixel Correction")
+		button1.connect("clicked", self.auto_hot_pixel)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Manual Correction")
+		box.pack_start(label, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Histogram Generation")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		
+		label = Gtk.Label("Number of Sample Histograms to Generate:")
+		hor_box.pack_start(label, True, True, 0)
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.spinbutton_4 = Gtk.SpinButton()
+		self.spinbutton_4.set_adjustment(adjustment)
+		self.spinbutton_4.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton_4.set_update_policy(policy)
+		self.spinbutton_4.connect("value-changed", self.histogram_number)
+		ver_box.pack_start(self.spinbutton_4, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Generate First Histogram")
+		button1.connect("clicked", self.gen_hist_one)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		label = Gtk.Label("Widget containing histogram plots to go here. Widget should also contain a contextual spinbutton so that one can input a value for each histogram.")
+		label.set_line_wrap(True)
+		head_box.pack_start(label, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		row.add(ver_box)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		ver_box.pack_start(hor_box, True, True, 0)
+		
+		button1 = Gtk.Button("Previous Histogram")
+		button1.connect("clicked", self.gen_prev_hist)
+		hor_box.pack_start(button1, True, True, 0)
+		
+		button2 = Gtk.Button("Next Histogram")
+		button2.connect("clicked", self.gen_next_hist)
+		hor_box.pack_start(button2, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Correct Hot Pixels")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		button1 = Gtk.Button("Perform Hot Pixel Correction")
+		button1.connect("clicked", self.man_hot_pixel)
+		ver_box.pack_start(button1, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Hot Pixel Correction", "Hot Pixel Correction")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
 		outer_box.pack_end(stack, True, True, 0)
 
-		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 600, 900, True)
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 725, 1200, True)
 		
 		image = Gtk.Image()
 		image.set_from_pixbuf(pixbuf)
@@ -1258,6 +1407,7 @@ class MyWindow(Gtk.Window):
 				checking_condition = False
 				
 	def raw_folder_selection(self,widget): 
+		global raw_in
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:
@@ -1275,11 +1425,12 @@ class MyWindow(Gtk.Window):
 		master_exp_time = self.spinbutton.get_value()
 		
 	def on_methodology_changed(self, button, name):
+		global methodology
 		if button.get_active():
 			if name == "Sobel":
-				print("Sobel On")
+				methodology = "Sobel"
 			elif name == "Fisher":
-				print("Fisher On")
+				methodology = "Fisher"
 		else:
 			print("Present state is", name)
 			
@@ -1288,8 +1439,71 @@ class MyWindow(Gtk.Window):
 		percentage = self.spinbutton_3.get_value()
 		
 	def luckframeselection(self,widget):
-		print("lucky frame selection process")
+		global percentage
+		global methodology
+		global raw_in
+		global luck_delete
+		checker = True
 		
+		while checker == True:
+			if raw_in == 0:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No RAW folder")
+				wrn_dialog.format_secondary_text("Select a folder to convert")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+					response_2 = dialog.run()
+					if response_2 == Gtk.ResponseType.OK:
+						raw_in = dialog.get_filename()
+						dialog.destroy()
+						checker = False 
+					elif response_2 == Gtk.ResponseType.CANCEL:
+						dialog.destroy() 
+						checker = False
+				elif response == Gtk.ResponseType.CANCEL:
+					checker = False
+		
+		if raw_in == 0:
+			print("no raw data")
+						
+		elif percentage == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Percentage zero")
+			wrn_dialog.format_secondary_text("Lower percentage threshold not set")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			
+		else:
+			if methodology == "Sobel":
+				lfs.sobel_selection(raw_in, percentage, luck_delete)
+			elif methodology == "Fisher":
+				lfs.fisher_slection(raw_in, percentage, luck_delete)
+		
+	def luckframedelete(self, switch, gparam):
+		global luck_delete
+		
+		if switch.get_active():
+			luck_delete = "delete"
+		else:
+			luck_delete = "retain"
+	
+	def auto_hot_pixel(self, widget):
+		print("auto hot pixel")
+		
+	def histogram_number(self, widget):
+		histogram_no = self.spinbutton_4.get_value()
+		
+	def gen_hist_one(self,widget):
+		print("gen hist one")
+		
+	def gen_prev_hist(self,widget):
+		print("gen prev hist")
+		
+	def gen_next_hist(self,widget):
+		print("gen next hist")
+		
+	def man_hot_pixel(self, widget):
+		print("manual hot pixel")
 				
 			
 win = MyWindow()

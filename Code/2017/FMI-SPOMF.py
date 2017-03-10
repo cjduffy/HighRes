@@ -1,4 +1,3 @@
-import cv2
 import numpy as np
 from scipy.fftpack import fft2, ifft2
 from scipy.ndimage import rotate
@@ -36,7 +35,6 @@ image2 = Image.open('outfile2.jpg')
 
 data1 = np.array(image1)
 data2 = np.array(image2)
-#data = rotate(data, 90)
 
 def FMI(data1, data2):
 	
@@ -69,24 +67,21 @@ iSPMF1 = FMI(data1, data2)
 
 rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
 scaling_factor = np.exp(scale)
-new_array_size = data2.shape/scaling_factor
+n, m = (data2.shape/scaling_factor)
+n = int(n)
+m = int(m)
 
-print(new_array_size)
+##The size of the array must be cast to an array.
+##If the array is recaled by too much it won't work.
 
-
-scaled_image = np.resize(data2, new_array_size)
+scaled_image = np.resize(data2, (m,n))
 scaled_image_2 = scaled_image
 
 rot1 = rotate(scaled_image, rotation)
 rot2 = rotate(scaled_image_2, rotation+180)
-
-##write the bracketed section into a function and call on rot1 and rot2
 
 iSPMF2 = FMI(data1, rot1)
 iSPMF3 = FMI(data1, rot2)
 
 rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
 rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)
-
-print(scale1)
-print(scale2)

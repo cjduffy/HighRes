@@ -2,8 +2,32 @@ import cv2
 import numpy as np
 from scipy.fftpack import fft2, ifft2
 from scipy.ndimage import rotate
+import scipy.ndimage.interpolation as ndii 
+import math
 #Final version won't need PIL
 from PIL import Image
+
+def logpolar(image, angles=None, radii=None):
+    """Return log-polar transformed image and log base."""
+    shape = image.shape
+    center = shape[0] / 2, shape[1] / 2
+    if angles is None:
+        angles = shape[0]
+    if radii is None:
+        radii = shape[1]
+    theta = np.empty((angles, radii), dtype=np.float64)
+    theta.T[:] = -np.linspace(0, np.pi, angles, endpoint=False)
+    #d = radii
+    d = np.hypot(shape[0]-center[0], shape[1]-center[1])
+    log_base = 10.0 ** (math.log10(d) / (radii))
+    radius = np.empty_like(theta)
+    radius[:] = np.power(log_base, np.arange(radii,
+                                                   dtype=np.float64)) - 1.0
+    x = radius * np.sin(theta) + center[0]
+    y = radius * np.cos(theta) + center[1]
+    output = np.empty_like(x)
+    ndii.map_coordinates(image, [x, y], output=output)
+    return output, log_base
 
 ##Image read in
 
@@ -18,11 +42,10 @@ data2 = np.array(image2)
 center1 = np.divide((data1.size), 2)
 center2 = np.divide((image2.size), 2)
 
-##Convert to logpolar
-##There is something wrong here, the documentatoin is non existant, I might actually be foreced to ask stackoverflow
-##Might just be best to write out the maths of this manuaually using formula laid out by wikipedia.
-LP1 = cv2.logPolar(data1, center1, 0.1,[cv2.WARP_FILL_OUTLIERS, 1])
-LP2 = cv2.logPolar(data2, center2, 10, [cv2.WARP_FILL_OUTLIERS, 1])
+
+LP1, log_base = logpolar(data1)
+LP2, log_base = logpolar(data2)
+
 
 ##Fourier Time!
 

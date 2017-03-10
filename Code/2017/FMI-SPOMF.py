@@ -33,37 +33,58 @@ def logpolar(image, angles=None, radii=None):
 
 ##Currently Hard wired for something in my working directory as I have decided how best to loop this yet.
 image1 = Image.open('outfile.jpg')
-image2 = Image.open('outfile.jpg')
+image2 = Image.open('outfile2.jpg')
 
 data1 = np.array(image1)
 data2 = np.array(image2)
 
+def FMI(data1, data2):
+	
+	LP1, log_base = logpolar(data1)
+	LP2, log_base = logpolar(data2)
+	
+	##Fourier Time!
+	
+	transform_image_1 = fft2(LP1)
+	transform_image_2 = fft2(LP2)
+	
+	phase_image_1 = np.imag(transform_image_1)
+	phase_image_2 = np.imag(transform_image_2)
+	
+		
+	if phase_image_1.shape != phase_image_2.shape:
+		x2, y2 = phase_image_2.shape
+		x1, y1 = phase_image_1.shape
+		x = x2 - x1
+		y = y2 - y1
+		phase_image_1 = np.lib.pad(phase_image_1, ((x,0), (y,0)), 'edge')
+		
+	
+	SPOMF = np.subtract(phase_image_2, phase_image_1)
+	iSPMF = ifft2(SPOMF)
 
-center1 = np.divide((data1.size), 2)
-center2 = np.divide((image2.size), 2)
+	return iSPMF
+	
+iSPMF1 = FMI(data1, data2)
 
-
-LP1, log_base = logpolar(data1)
-LP2, log_base = logpolar(data2)
-
-
-##Fourier Time!
-
-transform_image_1 = fft2(LP1)
-transform_image_2 = fft2(LP2)
-
-phase_image_1 = np.imag(transform_image_1)
-phase_image_2 = np.imag(transform_image_2)
-
-SPOMF = np.subtract(phase_image_2, phase_image_1)
-iSPMF = ifft2(SPOMF)
-
-rotation, scale = np.unravel_index(np.argmax(iSPMF), iSPMF.shape)
+rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
 scaling_factor = np.exp(scale)
 
-scaled_image = np.divide(image2, scaling_factor)
+print(rotation)
+
+scaled_image = np.divide(data2, scaling_factor)
 scaled_image_2 = scaled_image
 
 rot1 = rotate(scaled_image, rotation)
 rot2 = rotate(scaled_image_2, rotation+180)
 
+##write the bracketed section into a function and call on rot1 and rot2
+
+iSPMF2 = FMI(data1, rot1)
+iSPMF3 = FMI(data1, rot2)
+
+rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
+rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)
+
+print(scale1)
+print(scale2)

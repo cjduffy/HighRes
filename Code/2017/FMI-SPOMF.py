@@ -32,11 +32,11 @@ def logpolar(image, angles=None, radii=None):
 
 ##Currently Hard wired for something in my working directory as I have decided how best to loop this yet.
 image1 = Image.open('outfile.jpg')
-image2 = Image.open('outfile.jpg')
+image2 = Image.open('outfile2.jpg')
 
 data1 = np.array(image1)
-data = np.array(image2)
-data2 = rotate(data, 90)
+data2 = np.array(image2)
+#data = rotate(data, 90)
 
 def FMI(data1, data2):
 	
@@ -69,10 +69,12 @@ iSPMF1 = FMI(data1, data2)
 
 rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
 scaling_factor = np.exp(scale)
+new_array_size = data2.shape/scaling_factor
 
-print(rotation)
+print(new_array_size)
 
-scaled_image = np.divide(data2, scaling_factor)
+
+scaled_image = np.resize(data2, new_array_size)
 scaled_image_2 = scaled_image
 
 rot1 = rotate(scaled_image, rotation)
@@ -86,5 +88,5 @@ iSPMF3 = FMI(data1, rot2)
 rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
 rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)
 
-print(rotation1)
-print(rotation2)
+print(scale1)
+print(scale2)

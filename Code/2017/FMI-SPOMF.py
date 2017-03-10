@@ -8,7 +8,6 @@ import math
 from PIL import Image
 
 def logpolar(image, angles=None, radii=None):
-    """Return log-polar transformed image and log base."""
     shape = image.shape
     center = shape[0] / 2, shape[1] / 2
     if angles is None:
@@ -33,10 +32,11 @@ def logpolar(image, angles=None, radii=None):
 
 ##Currently Hard wired for something in my working directory as I have decided how best to loop this yet.
 image1 = Image.open('outfile.jpg')
-image2 = Image.open('outfile2.jpg')
+image2 = Image.open('outfile.jpg')
 
 data1 = np.array(image1)
-data2 = np.array(image2)
+data = np.array(image2)
+data2 = rotate(data, 90)
 
 def FMI(data1, data2):
 	
@@ -86,5 +86,5 @@ iSPMF3 = FMI(data1, rot2)
 rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
 rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)
 
-print(scale1)
-print(scale2)
+print(rotation1)
+print(rotation2)

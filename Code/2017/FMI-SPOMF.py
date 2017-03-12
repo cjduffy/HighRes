@@ -6,31 +6,46 @@ import math
 #Final version won't need PIL
 from PIL import Image
 
-def logpolar(image, angles=None, radii=None):
-    shape = image.shape
-    center = shape[0] / 2, shape[1] / 2
-    if angles is None:
-        angles = shape[0]
-    if radii is None:
-        radii = shape[1]
-    else:
-		theta = np.empty((angles, radii), dtype=np.float64)
-		theta.T[:] = -np.linspace(0, np.pi, angles, endpoint=False)
-		#d = radii
-		d = np.hypot(shape[0]-center[0], shape[1]-center[1])
-		log_base = 10.0 ** (math.log10(d) / (radii))
-		radius = np.empty_like(theta)
-		radius[:] = np.power(log_base, np.arange(radii, dtype=np.float64)) - 1.0
-		x = radius * np.sin(theta) + center[0]
-		y = radius * np.cos(theta) + center[1]
-		output = np.empty_like(x)
-		ndii.map_coordinates(image, [x, y], output=output)
-	return output, log_base
+def logpolar(image):
+
+	
+	##Initialise X Counter
+	x = 1
+	
+	##Get Shape of Image
+	max_x, max_y = image.shape
+	Log_Polar_Image = np.zeros((max_x, max_y))
+	
+	##Calculate the centre position
+	center_x = max_x/2
+	center_y = max_y/2
+	
+	##Loop Through x and y:
+	for x in range(1,max_x):
+		y = 1
+		for y in range(1,max_y):
+			x_pos = x - center_x
+			y_pos = y - center_y
+			
+			r = math.sqrt(x_pos**2 + y_pos**2)
+			if x_pos != 0:
+				a_in = math.fabs(y_pos/x_pos)
+				a = np.arctan(a_in)
+			else:
+				a = 1
+			#ep = math.log10(r)
+			
+			new_x = [r*np.cos(a)]
+			new_y = [r*np.sin(a)]
+	ndii.map_coordinates(image, [new_x, new_y], output=Log_Polar_Image)		
+			
+	return(Log_Polar_Image)
+	
 
 def FMI(data1, data2):
 	
-	LP1, log_base = logpolar(data1)
-	LP2, log_base = logpolar(data2)
+	LP1 = logpolar(data1)
+	LP2 = logpolar(data2)
 	
 	##Fourier Time!
 	
@@ -56,7 +71,7 @@ def FMI(data1, data2):
 	SPOMF = np.exp(np.array(np.subtract(phase_image_2, phase_image_1), dtype=np.float128))
 	iSPMF = ifft2(np.array((SPOMF), dtype=np.float64))
 	
-	return iSPMF, log_base
+	return iSPMF, #log_base
 
 ##Image read in
 
@@ -67,11 +82,11 @@ image2 = Image.open('outfile2.jpg')
 data1 = np.array((image1), dtype=np.float64)
 data2 = np.array((image2), dtype=np.float64)
 
-iSPMF1, log_base1 = FMI(data1, data2)
+iSPMF1 = FMI(data1, data2)
 
 
 rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
-scaling_factor = log_base1 ** scale
+scaling_factor = np.exp(scale)
 
 
 n, m = (data2.shape/scaling_factor)
@@ -85,8 +100,8 @@ scaled_image_2 = scaled_image
 rot1 = rotate(scaled_image, rotation)
 rot2 = rotate(scaled_image_2, rotation+180)
 
-iSPMF2, log_base2 = FMI(data1, rot1)
-iSPMF3, log_base3 = FMI(data1, rot2)
+iSPMF2 = FMI(data1, rot1)
+iSPMF3 = FMI(data1, rot2)
 
 rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
 rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)

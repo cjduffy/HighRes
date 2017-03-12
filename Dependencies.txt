@@ -6,3 +6,5 @@ Numpy
 gtk3
 pygobject
 matplotlib
+math
+scipy

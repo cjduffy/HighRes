@@ -37,6 +37,7 @@ data1 = np.array(image1)
 data2 = np.array(image2)
 
 def FMI(data1, data2):
+	np.seterr(all='ignore')
 	
 	LP1, log_base = logpolar(data1)
 	LP2, log_base = logpolar(data2)
@@ -51,22 +52,35 @@ def FMI(data1, data2):
 	
 		
 	if phase_image_1.shape != phase_image_2.shape:
-		x2, y2 = phase_image_2.shape
 		x1, y1 = phase_image_1.shape
-		x = x2 - x1
-		y = y2 - y1
-		phase_image_1 = np.lib.pad(phase_image_1, ((x,0), (y,0)), 'edge')
+		x2, y2 = phase_image_2.shape
+		print(x1,y1)
+		print(x2,y2)
+		try:
+			x = x2 - x1
+			y = y2 - y1
+			print(x,y)
+			phase_image_1 = np.lib.pad(phase_image_1, ((x,0), (y,0)), 'edge')
+		except:
+			x = x1 - x2
+			y = y1 - y2
+			print(x,y)
+			phase_image_2 = np.lib.pad(phase_image_2, ((x,0), (y,0)), 'edge')
 		
 	
-	SPOMF = np.subtract(phase_image_2, phase_image_1)
+	SPOMF = np.exp(np.subtract(phase_image_2, phase_image_1))
 	iSPMF = ifft2(SPOMF)
 
-	return iSPMF
+	return iSPMF, log_base
 	
-iSPMF1 = FMI(data1, data2)
+iSPMF1, log_base1 = FMI(data1, data2)
+
 
 rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
-scaling_factor = np.exp(scale)
+scaling_factor = log_base1 ** scale
+
+print(scaling_factor)
+
 n, m = (data2.shape/scaling_factor)
 n = int(n)
 m = int(m)
@@ -80,8 +94,8 @@ scaled_image_2 = scaled_image
 rot1 = rotate(scaled_image, rotation)
 rot2 = rotate(scaled_image_2, rotation+180)
 
-iSPMF2 = FMI(data1, rot1)
-iSPMF3 = FMI(data1, rot2)
+iSPMF2, log_base2 = FMI(data1, rot1)
+iSPMF3, log_base3 = FMI(data1, rot2)
 
 rotation1, scale1 = np.unravel_index(np.argmax(iSPMF2), iSPMF2.shape)
 rotation2, scale2 = np.unravel_index(np.argmax(iSPMF3), iSPMF3.shape)

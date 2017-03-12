@@ -13,18 +13,19 @@ def logpolar(image, angles=None, radii=None):
         angles = shape[0]
     if radii is None:
         radii = shape[1]
-    theta = np.empty((angles, radii), dtype=np.float64)
-    theta.T[:] = -np.linspace(0, np.pi, angles, endpoint=False)
-    #d = radii
-    d = np.hypot(shape[0]-center[0], shape[1]-center[1])
-    log_base = 10.0 ** (math.log10(d) / (radii))
-    radius = np.empty_like(theta)
-    radius[:] = np.power(log_base, np.arange(radii, dtype=np.float64)) - 1.0
-    x = radius * np.sin(theta) + center[0]
-    y = radius * np.cos(theta) + center[1]
-    output = np.empty_like(x)
-    ndii.map_coordinates(image, [x, y], output=output)
-    return output, log_base
+    else:
+		theta = np.empty((angles, radii), dtype=np.float64)
+		theta.T[:] = -np.linspace(0, np.pi, angles, endpoint=False)
+		#d = radii
+		d = np.hypot(shape[0]-center[0], shape[1]-center[1])
+		log_base = 10.0 ** (math.log10(d) / (radii))
+		radius = np.empty_like(theta)
+		radius[:] = np.power(log_base, np.arange(radii, dtype=np.float64)) - 1.0
+		x = radius * np.sin(theta) + center[0]
+		y = radius * np.cos(theta) + center[1]
+		output = np.empty_like(x)
+		ndii.map_coordinates(image, [x, y], output=output)
+	return output, log_base
 
 def FMI(data1, data2):
 	

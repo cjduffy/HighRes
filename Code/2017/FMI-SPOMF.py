@@ -115,18 +115,20 @@ print(scaling_factor)
 
 try:
 	n, m = (data2.shape/scaling_factor)
-	scaled_image = np.resize(data2, (m,n))
 	n = int(n)
 	m = int(m)
+	scaled_image = data2.resize((n,m))
+	
 except:
 	n, m, colour = (data2.shape/scaling_factor)
-	scaled_image = np.resize(data2, (m,n,0))
 	n = int(n)
 	m = int(m)
+	colour = int(colour)
+	scaled_image = np.resize(data2, (n,m,colour))
+	
 
 scaled_image_2 = scaled_image
-
-rot1 = rotate(scaled_image, rotation, reshape = False)
+rot1 = rotate(scaled_image, rotation, axes=(0,1), reshape = False)
 rot2 = rotate(scaled_image_2, rotation+180, reshape = False)
 
 iSPMF2 = FMI(data1, rot1)

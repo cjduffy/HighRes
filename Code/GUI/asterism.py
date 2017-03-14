@@ -7,7 +7,12 @@ from astropy.io import fits
 import numpy as np
 from PIL import Image
 import matplotlib
+matplotlib.use("GTK3Cairo")
 import matplotlib.pyplot as plt
+import random
+import os
+import math
+from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -18,7 +23,7 @@ from gi.repository import Gtk
 class File_Folder_Dialog(Gtk.Dialog):
 
     def __init__(self, parent):
-        Gtk.Dialog.__init__(self, "No input detected", parent, 0,
+        Gtk.Dialog.__init__(self, "File or Folder Selection Required", parent, 0,
             ("Folder", Gtk.ResponseType.ACCEPT,
              "File", Gtk.ResponseType.OK,
              "Cancel", Gtk.ResponseType.CANCEL))
@@ -31,7 +36,7 @@ class File_Folder_Dialog(Gtk.Dialog):
         box.add(label)
         self.show_all()
 
-class MyWindow(Gtk.Window):
+class Asterism(Gtk.Window):
 	
 	def __init__(self):
 		##default settings
@@ -78,8 +83,8 @@ class MyWindow(Gtk.Window):
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
 		global histogram_no
 		histogram_no = 0 
-		global int_hist
-		int_hist = int(histogram_no)
+		global hist_count
+		hist_count = 0
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -115,13 +120,9 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
-		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_clicked)
+		button1 = Gtk.Button("Choose Input")
+		button1.connect("clicked",self.input_selection, "dark")
 		ver_box.add(button1)
-		
-		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_clicked)
-		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Dark Current AVI to Frames")
 		button3.connect("clicked", self.begin_conversion_black)
@@ -163,14 +164,10 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
-		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_2_clicked)
+		button1 = Gtk.Button("Choose Input")
+		button1.connect("clicked",self.input_selection, "bias")
 		ver_box.add(button1)
-		
-		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_2_clicked)
-		ver_box.add(button2)
-		
+
 		button3 = Gtk.Button("Split Bias AVI to Frames")
 		button3.connect("clicked", self.begin_conversion_grey)
 		ver_box.add(button3)
@@ -252,13 +249,9 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
-		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_3_clicked)
+		button1 = Gtk.Button("Choose Input")
+		button1.connect("clicked",self.input_selection, "flat")
 		ver_box.add(button1)
-		
-		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_3_clicked)
-		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field AVI to Frames")
 		button3.connect("clicked", self.begin_conversion_white)
@@ -300,13 +293,9 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
-		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_4_clicked)
+		button1 = Gtk.Button("Choose Input")
+		button1.connect("clicked", self.input_selection, "flatdark")
 		ver_box.add(button1)
-		
-		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_4_clicked)
-		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
 		button3.connect("clicked", self.begin_conversion_black_white)
@@ -366,13 +355,9 @@ class MyWindow(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
-		button1 = Gtk.Button("Choose Folder")
-		button1.connect("clicked",self.on_folder_raw_clicked)
+		button1 = Gtk.Button("Choose Input")
+		button1.connect("clicked",self.input_selection, "raw")
 		ver_box.add(button1)
-		
-		button2 = Gtk.Button("Choose File")
-		button2.connect("clicked",self.on_file_raw_clicked)
-		ver_box.add(button2)
 		
 		button3 = Gtk.Button("Split AVI to Frames")
 		button3.connect("clicked", self.begin_conversion)
@@ -681,10 +666,14 @@ class MyWindow(Gtk.Window):
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
 		
-		global shown_hist
-		shown_hist = Gtk.Image()
-		shown_hist.set_from_pixbuf(histogram_plot)
-		row.add(shown_hist)
+		head_box = Gtk.Box()
+		row.add(head_box)
+		global fig
+		fig = plt.figure()
+		
+		canvas = FigureCanvas(fig)
+		canvas.set_size_request(400,400)
+		head_box.pack_start(canvas, True, True, 0)
 		
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
@@ -753,147 +742,58 @@ class MyWindow(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
-	def on_folder_clicked(self, widget):
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		dialog.set_default_size(800,400)
-			
+	def input_selection(self, widget, data):
+		dialog = File_Folder_Dialog(self)
 		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global dark_in
-			dark_in = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("Folder Selection Cancelled")
-				
 		dialog.destroy()
-		
-	def on_folder_2_clicked(self, widget):
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		dialog.set_default_size(800,400)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global bias_in
-			bias_in = dialog.get_filename()
+		if response == Gtk.ResponseType.ACCEPT:
+			dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				folder = dialog.get_filename()
+				if data == "dark":
+					global dark_in
+					dark_in = folder
+				elif data == "bias":
+					global bias_in
+					bias_in = folder 
+				elif data == "flatdark":
+					global flatdark_in
+					flatdark_in = folder
+				elif data == "flat":
+					global flat_in
+					flat_in = folder
+				elif data == "raw":
+					global raw_in
+					raw_in = folder
+			elif response == Gtk.ResponseType.CANCEL:
+				print("Folder selection cancelled")
+			dialog.destroy()
+		elif response == Gtk.ResponseType.OK:
+			dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				input_file = dialog.get_filename()
+				if data == "dark":
+					global single_dark
+					single_dark = input_file
+				elif data == "bias":
+					global single_bias
+					single_bias = input_file
+				elif data == "flatdark":
+					global single_flatdark
+					single_flatdark = input_file
+				elif data == "flat":
+					global single_flat
+					single_flat = input_file
+				elif data == "raw":
+					global single_raw
+					single_raw = input_file
+			elif response == Gtk.ResponseType.CANCEL:
+				print("File selection cancelled")
+			dialog.destroy()
 		elif response == Gtk.ResponseType.CANCEL:
-			print("Folder Selection Cancelled")
-				
-		dialog.destroy()
-		
-	def on_folder_3_clicked(self, widget):
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		dialog.set_default_size(800,400)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global flat_in
-			flat_in = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("Folder Selection Cancelled")
-				
-		dialog.destroy()
-		
-	def on_folder_4_clicked(self, widget):
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		dialog.set_default_size(800,400)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global flatdark_in
-			flatdark_in = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("Folder Selection Cancelled")
-				
-		dialog.destroy()
-		
-	def on_folder_raw_clicked(self, widget):
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		dialog.set_default_size(800,400)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global raw_in
-			raw_in = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("Folder Selection Cancelled")
-				
-		dialog.destroy()
-			
-	def on_file_clicked(self,widget):
-		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        		
-		self.add_filters(dialog)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global single_dark
-			single_dark = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("File Selection Cancelled")
-			
-		dialog.destroy()
-			
-	def on_file_2_clicked(self,widget):
-		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        		
-		self.add_filters(dialog)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global single_bias
-			single_bias = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("File Selection Cancelled")
-		
-		dialog.destroy()
-		
-	def on_file_3_clicked(self,widget):
-		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        		
-		self.add_filters(dialog)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global single_flat
-			single_flat = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("File Selection Cancelled")
-		
-	def on_file_4_clicked(self,widget):
-		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        		
-		self.add_filters(dialog)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global single_flatdark
-			single_flatdark = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("File Selection Cancelled")
-			
-	def on_file_raw_clicked(self,widget):
-		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN,(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-        		
-		self.add_filters(dialog)
-			
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			global single_raw
-			single_raw = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			print("File Selection Cancelled")
-		
-		dialog.destroy()
-		
-	def add_filters(self, dialog):
-		filter_avi = Gtk.FileFilter()
-		filter_avi.set_name("AVI Files")
-		filter_avi.add_mime_type("video/avi")
-		dialog.add_filter(filter_avi)
-			
-		filter_any = Gtk.FileFilter()
-		filter_any.set_name("Any File")
-		filter_any.add_pattern("*")
-		dialog.add_filter(filter_any)
+			print("Input selection cancelled")
 		
 	def on_switch_activated(self, switch, gparam):
 		global state
@@ -1515,24 +1415,88 @@ class MyWindow(Gtk.Window):
 		
 	def gen_hist_one(self,widget):
 		global histogram_no
+		global hist_count
+		global histograms
+		global raw_in
+		global int_hist
 		
 		if histogram_no == 0:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No histograms to generate")
 			wrn_dialog.format_secondary_text("Change the number on the spin button to set up a number of histograms to generate")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
-		
+			return(1)
+			
+		elif raw_in == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No histograms to generate")
+			wrn_dialog.format_secondary_text("Please select files to generate histograms from")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		elif hist_count == 0:
+			hist_count = 1
+			counter = 0
+			counter_2 = 0
+			int_hist = int(histogram_no)
+			filelist = [] 
+			histograms = []
+			
+			lucky_frame_path = raw_in+"/lucky_frames"
+
+			if os.path.isdir(lucky_frame_path):
+				for file in os.listdir(lucky_frame_path):
+					if file.endswith(".fits"):
+						counter += 1
+						filelist.append(file)
+			else:
+				for file in os.listdir(raw_in):
+					if file.endswith(".fits"):
+						counter += 1
+						filelist.append(file)
+						
+			for counter_2 in range(0,int_hist):
+				random_number = random.randrange(1, counter, 1)
+				im_to_hist = raw_in+"/"+filelist[random_number]
+				im = fits.open(im_to_hist)
+				im_data = im[0].data
+				im_hist, im_bins = np.histogram(im_data, bins="auto")
+				im_histogram = [im_hist, im_bins]
+				histograms.append(im_histogram)
+			
+			f = Asterism.create_plot(histograms[hist_count])
+			
+			return(f)
+			
 		else:
-			global histogram_plot
-			histogram_plot = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 300, 450, True)
-			global shown_hist
-			shown_hist.set_from_pixbuf(histogram_plot)
-		
+			hist_count = 1
+			
+			f = Asterism.create_plot(histograms[hist_count])
+			
+			return(f)
+			
 	def gen_prev_hist(self,widget):
-		print("gen prev hist")
+		global hist_count
+		global int_hist
+		
+		if hist_count == 1:
+			hist_count = 1
+			
+		else: 
+			hist_count -= 1
+			Asterism.create_plot(histograms[hist_count])
 		
 	def gen_next_hist(self,widget):
-		print("gen next hist")
+		global hist_count 
+		global int_hist
+		
+		if hist_count == int_hist:
+			hist_count = int_hist
+			
+		else:
+			hist_count += 1
+			Asterism.create_plot(histograms[hist_count])
+			
 		
 	def man_hot_pixel(self, widget):
 		print("manual hot pixel")
@@ -1540,9 +1504,34 @@ class MyWindow(Gtk.Window):
 	def add_hist_thresh(self, widget):
 		print("add threshold value")
 		
+	def create_plot(histogram):
+		global hist_count 
+		global fig
+		
+		x = 0
+		
+		log_hist = []
+		
+		for x in range(0,len(histogram[0])):
+			if histogram[0][x] != 0:
+				log_hist.append(math.log10(histogram[0][x]))
+			else:
+				log_hist.append(0)
+			x += 1
+		
+		plt.clf()
+		ax = fig.add_subplot(111)
+		plt.bar(histogram[1][:-1], log_hist, width = 1)
+		plt.xlim(min(histogram[1]), max(histogram[1]))
+		plt.xlabel("Pixel Value")
+		plt.ylabel("Log Frequency")
+		plt.title("Histogram "+str(hist_count))
+		fig.canvas.draw()
+				
+		print(histogram[0])
 				
 			
-win = MyWindow()
+win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()
 Gtk.main()

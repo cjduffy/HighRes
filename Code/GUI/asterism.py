@@ -74,6 +74,12 @@ class MyWindow(Gtk.Window):
 		percentage = 0
 		global methodology
 		methodology = "Sobel"
+		global histogram_plot
+		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
+		global histogram_no
+		histogram_no = 0 
+		global int_hist
+		int_hist = int(histogram_no)
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -440,8 +446,6 @@ class MyWindow(Gtk.Window):
 		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
-		##Still to add: Add in a non-deleting method for those that want to keep all data
-		
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		
@@ -677,11 +681,26 @@ class MyWindow(Gtk.Window):
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
 		
-		head_box = Gtk.Box()
-		row.add(head_box)
-		label = Gtk.Label("Widget containing histogram plots to go here. Widget should also contain a contextual spinbutton so that one can input a value for each histogram.")
-		label.set_line_wrap(True)
-		head_box.pack_start(label, True, True, 0) 
+		global shown_hist
+		shown_hist = Gtk.Image()
+		shown_hist.set_from_pixbuf(histogram_plot)
+		row.add(shown_hist)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		row.add(ver_box)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		ver_box.pack_start(hor_box, True, True, 0)
+		
+		label = Gtk.Label("Enter Threshold Value:\n(Press Enter to Confirm)")
+		hor_box.pack_start(label, True, True, 0)
+		
+		global hist_entry
+		hist_entry = Gtk.Entry()
+		hist_entry.connect("activate", self.add_hist_thresh)
+		hor_box.pack_start(hist_entry, True, True, 0)
 		
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
@@ -717,7 +736,7 @@ class MyWindow(Gtk.Window):
 		
 		button1 = Gtk.Button("Perform Hot Pixel Correction")
 		button1.connect("clicked", self.man_hot_pixel)
-		ver_box.pack_start(button1, True, True, 0)
+		ver_box.pack_start(button1, True, True, 0) 
 		
 		listbox.add(row)
 		
@@ -1468,7 +1487,7 @@ class MyWindow(Gtk.Window):
 			print("no raw data")
 						
 		elif percentage == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Percentage zero")
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Percentage zero")
 			wrn_dialog.format_secondary_text("Lower percentage threshold not set")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
@@ -1491,10 +1510,23 @@ class MyWindow(Gtk.Window):
 		print("auto hot pixel")
 		
 	def histogram_number(self, widget):
+		global histogram_no
 		histogram_no = self.spinbutton_4.get_value()
 		
 	def gen_hist_one(self,widget):
-		print("gen hist one")
+		global histogram_no
+		
+		if histogram_no == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No histograms to generate")
+			wrn_dialog.format_secondary_text("Change the number on the spin button to set up a number of histograms to generate")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+		
+		else:
+			global histogram_plot
+			histogram_plot = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 300, 450, True)
+			global shown_hist
+			shown_hist.set_from_pixbuf(histogram_plot)
 		
 	def gen_prev_hist(self,widget):
 		print("gen prev hist")
@@ -1504,6 +1536,10 @@ class MyWindow(Gtk.Window):
 		
 	def man_hot_pixel(self, widget):
 		print("manual hot pixel")
+		
+	def add_hist_thresh(self, widget):
+		print("add threshold value")
+		
 				
 			
 win = MyWindow()

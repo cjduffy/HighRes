@@ -20,6 +20,33 @@ from gi.repository import GdkPixbuf
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
+class master_structure:
+	
+	def __init__ (self):
+		self.master_dark = 0
+		self.master_flat = 0 
+		
+	def set_master_filename(mode, data):
+		if mode == "dark":
+			self.master_dark_filename = data
+		elif mode == "flat":
+			self.master_flat_filename = data
+	
+	def get_master_filename(mode):
+		if mode == "dark":
+			return(self.master_dark_filename)
+		elif mode == "flat":
+			return(self.master_flat_filename)	
+	
+	def set_master(mode, data):
+		if mode == "dark":
+			self.master_dark = data
+		elif mode == "flat":
+			self.master_flat = data
+	
+	def set_exposure_time(data):
+		self.master_dark_exposure_time = data
+
 class data_structure:
 	
 	def __init__(self, data_type):
@@ -30,19 +57,18 @@ class data_structure:
 	
 	def set_data(self, data):
 		self.data = data
-		return(data)
 	
 	def set_type(self, data_type):
 		self.data_type = data_type
-		return(data_type)
 		
 	def set_mode(self, data_mode):
 		self.data_mode = data_mode
-		return(data_mode)
 	
 	def set_raw_data(self, raw_data):
 		self.raw_data = raw_data
-		return(raw_data)
+		
+	def set_raw_exp(self, raw_exp_time):
+		self.raw_exp_time = raw_exp_time
 		
 
 class File_Folder_Dialog(Gtk.Dialog):
@@ -70,31 +96,16 @@ class Asterism(Gtk.Window):
 		bias = data_structure("bias")
 		flatdark = data_structure("flat_dark")
 		raw = data_structure("raw")
-		
 		data_list = [dark, bias, flat, flatdark, raw]
-		
 		state = False
-		global luck_delete
+		masters = master_structure()
 		luck_delete = "Delete"
-		
-		global master_dark
-		master_dark = 0 
-		global master_flat
-		master_flat = 0 
-		
-		global exp_time
 		exp_time = 0
-		global master_exp_time
 		master_exp_time = 0
-		global percentage
 		percentage = 0
-		global methodology
 		methodology = "Sobel"
-		global histogram_plot
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
-		global histogram_no
 		histogram_no = 0 
-		global hist_count
 		hist_count = 0
 		
 		Gtk.Window.__init__(self, title="Asterism")
@@ -211,7 +222,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Scalable Thermal Frame")
-		button1.connect("clicked", self.create_thermal_master)
+		button1.connect("clicked", self.create_thermal_master, data_list)
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -340,7 +351,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Master Flat Field")
-		button1.connect("clicked", self.create_flat_master)
+		button1.connect("clicked", self.create_flat_master, data_list)
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -435,7 +446,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton_2.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton_2.set_update_policy(policy)
-		self.spinbutton_2.connect("value-changed", self.on_exp_time_changed)
+		self.spinbutton_2.connect("value-changed", self.on_exp_time_changed, data_list)
 		ver_box.pack_start(self.spinbutton_2, True, True, 0)
 		
 		listbox.add(row)
@@ -753,6 +764,8 @@ class Asterism(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
+	##Functions
+		
 	def input_selection(self, widget, data_type, data_list):
 		dialog = File_Folder_Dialog(self)
 		response = dialog.run()
@@ -801,310 +814,131 @@ class Asterism(Gtk.Window):
 	def convert_to_fits(self, widget, data_type, data_list, state):
 		fits_response = AtF.avi_to_fits(data_list, data_type, state)
 		return(fits_response)
-	
-	def create_thermal_master(self, widget, data_list, mode):	
-		if data_list[0].data == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Dark Current Data")
-			wrn_dialog.format_secondary_text("Please select a folder containing dark current images")
-			response = wrn_dialog.run()
-			wrn_dialog.destroy()
-			if response == Gtk.ResponseType.OK:
-				Asterism.input_selection(0, data_list)
-			elif response == Gtk.ResponseType.CANCEL:
-				return(1)
-			
-		elif data_list[1].data == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Bias Frame Data")
-			wrn_dialog.format_secondary_text("Please select a folder containing bias frame images")
-			response = wrn_dialog.run()
-			wrn_dialog.destroy()
-			if response == Gtk.ResponseType.OK:
-				Asterism.input_selection(1, data_list) 
-			elif response == Gtk.ResponseType.CANCEL:
-				return(2)
-				
-		else:
-			mc.master_creation(dark_in, bias_in, "dark", "bias")
-			
-	def create_flat_master(self,widget):
-		global flat_in
-		global flatdark_in
 		
-		if (flat_in == 0):
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
-			wrn_dialog.format_secondary_text("Please select a folder containing flat fields")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
-			
-		elif (flatdark_in == 0): 
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
-			wrn_dialog.format_secondary_text("Please select a folder containing flat darks")
-			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
-			wrn_dialog.destroy()
-		
-		else:
-			mc.master_creation(flat_in, flatdark_in, "flat", "flat_dark")
+	def create_master(self, widget, data_list, mode):
+		if mode = "dark":
+			stage = 0
+		elif mode = "flat":
+			stage = 2	
+		counter = stage	
+		for counter in range(stage, stage+1):
+			if data_list[counter].data == 0:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "File not Found")
+				wrn_dialog.format_secondary_text("Please select a folder containing images of type: "+str(data_list[counter].data_type))
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.OK:
+					Asterism.input_selection(counter, data_list)
+				elif response == Gtk.ResponseType.CANCEL:
+					return(1)
+			counter += 1	
+		mc.master_creation(data_list, master_structure, mode)
+		return(data_list, master_structure)
 
-	def master_retrieval(self,widget):
-		if (flat_in == 0) or (dark_in == 0):
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No files detected")
-			wrn_dialog.format_secondary_text("Please select a folder containing files in the appropraite tab and create a master")
+	def master_retrieval(self, widget, master_structure):
+		if master_structure.master_dark_filename == 0 or master_structure.master_flat_filename == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Masters Files Not Found")
+			wrn_dialog.format_secondary_text("Please use the utilities to create master files")
 			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
 			wrn_dialog.destroy()
-		else: 
-			global master_dark
-			global master_flat
-			master_dark = fits.open(dark_in+"/Master_dark.fits")
-			master_flat = fits.open(flat_in+"/Master_flat.fits")
-			
-	def manual_master_dark(self,widget):
-		global master_dark
 		
-		if (master_dark != 0):
-			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Dark exists")
-			dialog.format_secondary_text("A Master Dark file has already been loaded, do you wish to replace it?")
-			response = dialog.run()
-			dialog.destroy()
-			if response == Gtk.ResponseType.OK:
-				dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-				response = dialog.run()
-				if response == Gtk.ResponseType.OK:
-					master_dark_file = dialog.get_filename()
-					master_dark = fits.open(master_dark_file)
-				elif response == Gtk.ResponseType.CANCEL:
-					print("Dark selection cancelled")
-					
-				dialog.destroy()
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Dark selection cancelled")
-				
-			dialog.destroy()
-			
 		else:
-			dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-			response = dialog.run()
-			if response == Gtk.ResponseType.OK:
-				master_dark_file = dialog.get_filename()
-				master_dark = fits.open(master_dark_file)
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Dark selection cancelled")
-				
-			dialog.destroy()
-		
-	def manual_master_flat(self,widget):
-		global master_flat
-		
-		if (master_flat != 0):
-			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Flat exists")
-			dialog.format_secondary_text("A Master Flat file has already been loaded, do you wish to replace it?")
-			response = dialog.run()
-			dialog.destroy()
-			if response == Gtk.ResponseType.OK:
-				dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-				response = dialog.run()
-				if response == Gtk.ResponseType.OK:
-					master_flat_file = dialog.get_filename()
-					master_flat = fits.open(master_flat_file)
-				elif response == Gtk.ResponseType.CANCEL:
-					print("Flat selection cancelled")
-					
-				dialog.destroy()
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Flat selection cancelled")
-				
-			dialog.destroy()
+			master_dark_file = fits.open(master_structure.master_dark_filename)
+			master_flat_file = fits.open(master_structure.master_flat_filename)
+			master_dark = master_dark_file[0].data
+			master_flat = master_flat_file[0].data
+			master_structure.set_master("dark", master_dark)
+			master_structure.set_master("flat", master_flat)
 			
+		return(master_structure)
+	
+	def manual_master_selection(self, widget, mode, master_structure):
+		if mode == "dark":
+			imtype = "Master Dark"
+			imtype_location = master_structure.master_dark
+		elif mode == "flat":
+			imtype = "Master Flat"
+			imtype_location = master_structure.master_flat
 		else:
-			dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+			return("Mode Error")
+			
+		if imtype_location != 0:
+			print_string = str(imtype)+" exists"
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, print_string)
+			dialog.format_secondary_text("Do you wish to replace it?")
 			response = dialog.run()
-			if response == Gtk.ResponseType.OK:
-				master_flat_file = dialog.get_filename()
-				master_flat = fits.open(master_flat_file)
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Flat selection cancelled")
-				
 			dialog.destroy()
+			if response == Gtk.ResponseType.OK:
+				pass
+			elif response == Gtk.ResponseType.CANCEL
+				return("selection cancelled") 
 		
-	def darkflat_correction(self,widget):
-		global master_dark
-		global master_flat
-		global raw_in
-		global single_raw
-		global exp_time
-		global master_exp_time
-		raw_style = 0
+		dialog = Gtk.FileChooserDialog("Select Master File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			master_structure.set_master_filename(mode, dialog.get_filename())
+			master_file = fits.open(master_structure.get_master_filename(mode))
+			master_data = master_file[0].data
+			master_structure.set_master(mode, master_data)
+		else response == Gtk.ResponseType.CANCEL:
+			dialog.destroy()
+			return("selection cancelled")
 		
-		checking_condition = True
+		dialog.destroy()
+		return(master_structure)
+			
+	def darkflat_correction(self, widget, master_structure, data_list):
+		if master_structure.master_dark == 0:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Master Dark File")
+			dialog.format_secondary_text("Please create or select a Master Dark file")
+			response = dialog.run()
+			dialog.destroy()
+			return(1)
+			
+		elif master_structure.master_flat == 0:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Master Flat File")
+			dialog.format_secondary_text("Please create or select a Master Dark file")
+			response = dialog.run()
+			dialog.destroy()
+			return(2)
+			
+		elif data_list[4].raw_exp_time == 0:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Exposure Time Zero")
+			dialog.format_secondary_text("Please select an exposure time in the Raw Data section")
+			response = dialog.run()
+			dialog.destroy()
+			return(3)
+			
+		elif master_structure.master_dark_exposure_time == 0:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Master Dark Exposure Time Zero")
+			dialog.format_secondary_text("Please select an exposure time in the Dark Current section")
+			response = dialog.run()
+			dialog.destroy()
+			return(4)
+			
+		df.darkflat(data_list, master_structure)
 		
-		while checking_condition == True:
-			if (master_dark == 0):
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No dark current file found")
-				wrn_dialog.format_secondary_text("Missing a master, or a single, dark image. Select one now?")
-				response = wrn_dialog.run()
-				condition = True
-				while condition == True: 
-					if response == Gtk.ResponseType.OK:
-						wrn_dialog.destroy()
-						dialog = Gtk.FileChooserDialog("Select Master Dark File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response_2 = dialog.run()
-						if response_2 == Gtk.ResponseType.OK:
-							master_dark_filename = dialog.get_filename()
-							if master_dark_filename.endswith(".fits"):
-								master_dark = fits.open(master_dark_filename)
-								condition = False
-							else:
-								wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Invalid filetype")
-								wrn_dialog.format_secondary_text("Please select a FITS file")
-								response_3 = wrn_dialog.run()
-								if response_3 == Gtk.ResponseType.OK:
-									pass
-								elif response_3 == Gtk.ResponseType.CANCEL:
-									print("correction progress cancelled")
-									condition = False
-									checking_condition = False
-								wrn_dialog.destroy()
-							dialog.destroy()
-						elif response_2 == Gtk.ResponseType.CANCEL:
-							print("correction progress cancelled")
-							condition = False
-							checking_condition = False
-							dialog.destroy()
-						dialog.destroy()
-					elif response == Gtk.ResponseType.CANCEL:
-						print("correction progress cancelled")
-						condition = False
-						checking_condition = False
-						
-				wrn_dialog.destroy()
-				
-			elif (master_flat == 0):
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No flat field file found")
-				wrn_dialog.format_secondary_text("Missing a master, or a single, flat field image. Select one now?")
-				response = wrn_dialog.run()
-				condition = True
-				while condition == True: 
-					if response == Gtk.ResponseType.OK:
-						wrn_dialog.destroy()
-						dialog = Gtk.FileChooserDialog("Select Master Flat File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response_2 = dialog.run()
-						if response_2 == Gtk.ResponseType.OK:
-							master_flat_filename = dialog.get_filename()
-							if master_flat_filename.endswith(".fits"):
-								master_flat = fits.open(master_flat_filename)
-								condition = False
-							else:
-								wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Invalid filetype")
-								wrn_dialog.format_secondary_text("Please select a FITS file")
-								response_3 = wrn_dialog.run()
-								if response_3 == Gtk.ResponseType.OK:
-									condition = True
-								elif response_3 == Gtk.ResponseType.CANCEL:
-									print("correction progress cancelled")
-									condition = False
-									checking_condition = False
-								wrn_dialog.destroy()
-								dialog.destroy()
-						elif response_2 == Gtk.ResponseType.CANCEL:
-							print("correction progress cancelled")
-							condition = False
-							checking_condition = False
-							dialog.destroy()
-						dialog.destroy()
-					elif response == Gtk.ResponseType.CANCEL:
-						print("correction progress cancelled")
-						condition = False
-						checking_condition = False
-						
-				wrn_dialog.destroy()
-				
-			elif (raw_style == 0):
-				if (raw_in == 0):
-					if (single_raw == 0): 
-						info_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Raw File(s)")
-						info_dialog.format_secondary_text("Please select a file or folder")
-						info_dialog.run()
-						info_dialog.destroy()
-						
-						dialog = File_Folder_Dialog(self)
-						response = dialog.run()
-						dialog.destroy()
-						if response == Gtk.ResponseType.CANCEL:
-							print("Cancelling")
-							dialog.destroy()
-							checking_condition = False
-						elif response == Gtk.ResponseType.OK:
-							dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-							response = dialog.run()
-							if response == Gtk.ResponseType.OK:
-								single_raw = dialog.get_filename()
-								dialog.destroy()
-							elif response == Gtk.ResponseType.CANCEL:
-								dialog.destroy()
-								checking_condition = False 
-							dialog.destroy()
-							
-						elif response == Gtk.ResponseType.ACCEPT:
-							dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-							response = dialog.run()
-							if response == Gtk.ResponseType.OK:
-								raw_in = dialog.get_filename()
-								dialog.destroy()
-							elif response == Gtk.ResponseType.CANCEL:
-								dialog.destroy()
-								checking_condition = False
-							dialog.destroy()
-						dialog.destroy()
-							
-					else:
-						raw_style = single_raw
-				else:
-					raw_style = raw_in
-				
-			elif (exp_time == 0) or (master_exp_time == 0): 
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Exposure Time is Zero")
-				wrn_dialog.format_secondary_text("Either the master dark exposure time is zero, or the raw image exposure time is zero, please give an exposure time and rerun")
-				wrn_dialog.run()
-				checking_condition = False
-				wrn_dialog.destroy()
-				
-			else: 
-				print("darkflat continues")
-				df.darkflat(master_flat, master_dark, raw_style, exp_time, master_exp_time)
-				checking_condition = False
-		
-	def on_exp_time_changed(self,widget):
-		global exp_time
+	def on_exp_time_changed(self, widget, data_list):
 		exp_time = self.spinbutton_2.get_value()
+		data_list[4].set_exposure_time(exp_time)
+		return(data_list)
 		
-	def on_master_exp_time_changed(self,widget): 
-		global master_exp_time
+	def on_master_exp_time_changed(self, widget, master_structure): 
 		master_exp_time = self.spinbutton.get_value()
+		master_structure.set_exposure_time(master_exp_time)
+		return(master_structure)
 		
-	def on_methodology_changed(self, button, name):
-		global methodology
+	def on_methodology_changed(self, button, name, methodology):
 		if button.get_active():
 			if name == "Sobel":
 				methodology = "Sobel"
 			elif name == "Fisher":
 				methodology = "Fisher"
-		else:
-			print("Present state is", name)
+		return(methodology)
 			
 	def on_percent_changed(self,widget):
-		global percentage
 		percentage = self.spinbutton_3.get_value()
+		return(percentage)
 		
 	def luckframeselection(self,widget):
 		global percentage

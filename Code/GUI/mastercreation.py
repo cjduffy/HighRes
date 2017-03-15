@@ -1,59 +1,60 @@
-def master_creation(folder, folder_2, Imtype, Imtype_2):
+def master_creation(data_list, master_structure, mode):
 	
 	import numpy as np
-	import os 
+	import os
 	from astropy.io import fits
 	
-	n = 0
-	m = 0
+	if mode == "dark":
+		beginning_stage = 0
+		end_stage = 1
+	elif mode == "flat":
+		beginning_stage = 2
+		end_stage = 3
+	else:
+		return("Mode Error")
+		
+	stage = beginning_stage
 	
-	condition = True
-	condition_2 = True
+	if mode == "flat":
+		target = stage - beginning_stage 
 	
-	while condition == True: 
-		for file in dirs in folder:
-			filename = str(Imtype)+"1_1.fits"
-			if os.path_isfile(filename):
-				test = fits.open(filename)
-				testdata = test[0].data
-				size = testdata.shape 
-				image = np.zeros(size)
-				condition = False
-
-	while condition_2 == True:
-		for file in dirs in folder:
-			filename_2 = str(Imtype_2)+"1_1.fits"
-			if os.path_isfile(filename_2):
-				test_2 = fits.open(filename_2)
-				testdata_2 = test[0].data
-				size_2 = testdata_2.shape
-				image_2 = np.zeros(size_2)
-				condition = False
+	mean_prime = 0
+	mean_second = 0
 	
-	for file in dirs in folder:
-		if file.startswith(Imtype):
-			n += 1
-			im_fit = fits.open(file)
-			im_data = im_fit[0].data
-			im_total = np.add(im_total, im_data)
+	mean_pair = [mean_prime, mean_second]
+	
+	for stage in range(beginning_stage,end_stage):
+		counter = 0
+		for file in dirs in data_list[stage].data:
+			if file.startswith(str(data_list[stage].data_type)):
+				counter += 1
+				im_fit = fits.open(file)
+				im_data = im_fit[0].data
+				im_total = np.add(im_total, im_data)
+				
+		if mode == "dark":
+			mean_pair[stage] = np.divide(im_total, counter)
 			
-	for file in dirs in folder_2: 		
-		if file.startswith(Imtype_2):
-			m += 1
-			im_fit_2 = fits.open(file)
-			im_data_2 = im_fit_2[0].data
-			im_total_2 = np.add(im_total_2, im_data_2)
+		elif mode == "flat":
+			mean_pair[target] = np.divide(im_total, counter)
+			target += 1
+		
+		stage += 1	
 			
-	mean_im = np.divide(im_total, n) 
-	mean_im_2 = np.divide(im_total_2, m) 
-	
-	master_im = np.subtract(mean.im, mean_im_2)
-	
+	master_im = np.subtract(mean_pair[0], mean_pair[1])
+		
 	hdu = fits.PrimaryHDU()
 	hdu.data = master_im
-	hdu.writeto("Master_"+str(Imtype)+".fits", overwrite = True)
-			
-			
-		
+
+	if mode = "dark":
+		filename = "Master"+str(data_list[0].data_type)+".fits"
+	elif mode = "flat":
+		filename = "Master"+str(data_list[1].data_type)+".fits"	
 	
+	master_structure.set_master_filename(mode, filename)
+	hdu.writeto(filename, overwrite = True)
+	
+	return(master_structure)
+		
+
 	

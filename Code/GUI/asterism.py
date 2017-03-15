@@ -20,6 +20,31 @@ from gi.repository import GdkPixbuf
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 
+class data_structure:
+	
+	def __init__(self, data_type):
+		self.data_type = data_type
+		self.data = 0
+		self.data_mode = 0
+		self.raw_data = 0 
+	
+	def set_data(self, data):
+		self.data = data
+		return(data)
+	
+	def set_type(self, data_type):
+		self.data_type = data_type
+		return(data_type)
+		
+	def set_mode(self, data_mode):
+		self.data_mode = data_mode
+		return(data_mode)
+	
+	def set_raw_data(self, raw_data):
+		self.raw_data = raw_data
+		return(raw_data)
+		
+
 class File_Folder_Dialog(Gtk.Dialog):
 
     def __init__(self, parent):
@@ -40,28 +65,14 @@ class Asterism(Gtk.Window):
 	
 	def __init__(self):
 		##default settings
-		global flat_in
-		flat_in = 0
-		global flatdark_in
-		flatdark_in = 0 
-		global dark_in
-		dark_in = 0
-		global bias_in 
-		bias_in = 0
-		global single_flat
-		single_flat = 0
-		global single_dark
-		single_dark = 0
-		global single_bias
-		single_bias = 0 
-		global single_flatdark
-		single_flatdark = 0
-		global raw_in
-		raw_in = 0
-		global single_raw
-		single_raw = 0
+		dark = data_structure("dark")
+		flat = data_structure("flat")
+		bias = data_structure("bias")
+		flatdark = data_structure("flat_dark")
+		raw = data_structure("raw")
 		
-		global state
+		data_list = [dark, bias, flat, flatdark, raw]
+		
 		state = False
 		global luck_delete
 		luck_delete = "Delete"
@@ -121,11 +132,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, "dark")
+		button1.connect("clicked",self.input_selection, 0, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Dark Current AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_black)
+		button3.connect("clicked", self.convert_to_fits, 0, data_list, state)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -165,11 +176,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, "bias")
+		button1.connect("clicked",self.input_selection, 1, data_list)
 		ver_box.add(button1)
 
 		button3 = Gtk.Button("Split Bias AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_grey)
+		button3.connect("clicked", self.convert_to_fits, 1, data_list, state)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -250,11 +261,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, "flat")
+		button1.connect("clicked",self.input_selection, 2, data_list, state)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_white)
+		button3.connect("clicked", self.convert_to_fits, 2, data_list, state)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -294,11 +305,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked", self.input_selection, "flatdark")
+		button1.connect("clicked", self.input_selection, 3, data_list, state)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
-		button3.connect("clicked", self.begin_conversion_black_white)
+		button3.connect("clicked", self.convert_to_fits, 3, data_list, state)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -356,11 +367,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, "raw")
+		button1.connect("clicked",self.input_selection, 4, data_list, state)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split AVI to Frames")
-		button3.connect("clicked", self.begin_conversion)
+		button3.connect("clicked", self.convert_to_fits, 4, data_list, state)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -742,7 +753,7 @@ class Asterism(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
-	def input_selection(self, widget, data):
+	def input_selection(self, widget, data_type, data_list):
 		dialog = File_Folder_Dialog(self)
 		response = dialog.run()
 		dialog.destroy()
@@ -751,319 +762,67 @@ class Asterism(Gtk.Window):
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				folder = dialog.get_filename()
-				if data == "dark":
-					global dark_in
-					dark_in = folder
-				elif data == "bias":
-					global bias_in
-					bias_in = folder 
-				elif data == "flatdark":
-					global flatdark_in
-					flatdark_in = folder
-				elif data == "flat":
-					global flat_in
-					flat_in = folder
-				elif data == "raw":
-					global raw_in
-					raw_in = folder
+				data_list[data_type].set_data(folder)
+				data_list[data_type].set_mode("group")
 			elif response == Gtk.ResponseType.CANCEL:
-				print("Folder selection cancelled")
+				print("Folder Selection Cancelled")
 			dialog.destroy()
 		elif response == Gtk.ResponseType.OK:
-			dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+			dialog == Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
-				input_file = dialog.get_filename()
-				if data == "dark":
-					global single_dark
-					single_dark = input_file
-				elif data == "bias":
-					global single_bias
-					single_bias = input_file
-				elif data == "flatdark":
-					global single_flatdark
-					single_flatdark = input_file
-				elif data == "flat":
-					global single_flat
-					single_flat = input_file
-				elif data == "raw":
-					global single_raw
-					single_raw = input_file
+				filename = dialog.get_filename()
+				data_list[data_type].set_data(folder)
+				data_list[data_type].set_mode("single")
 			elif response == Gtk.ResponseType.CANCEL:
-				print("File selection cancelled")
+				print("File Selection Cancelled")
 			dialog.destroy()
 		elif response == Gtk.ResponseType.CANCEL:
-			print("Input selection cancelled")
+			print("Selection Cancelled")
+		return(data_list)
+		
+	def raw_folder_selection(self,widget,data_list): 
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			data_list[4].set_raw_data = dialog.get_filename()
+		elif response == Gtk.ResponseType.CANCEL:
+			pass
+		dialog.destroy()
+		return(data_list)
 		
 	def on_switch_activated(self, switch, gparam):
-		global state
 		if switch.get_active():
 			state = True
 		else:
 			state = False
-		
-	def begin_conversion(self, widget):
-		global raw_in
-		global single_raw
-		global state
-		condition = True
-	
-		while condition == True:
-			if (raw_in != 0):
-				n = AtF.avi_to_fits(group=raw_in, switch=state, Imtype="frame")
-				condition = False
-			if (single_raw != 0):
-				o = AtF.avi_to_fits(single=single_raw, switch=state, Imtype="frame")
-				condition = False
-			else:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-				wrn_dialog.format_secondary_text("Please Select a File or Folder")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = File_Folder_Dialog(self)
-					response = dialog.run()
-					if response == Gtk.ResponseType.CANCEL:
-						print("Cancelling")
-						dialog.destroy()
-						condition = False
-					elif response == Gtk.ResponseType.OK:
-						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							single_raw = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False 
-						dialog.destroy()
-						
-					elif response == Gtk.ResponseType.ACCEPT:
-						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							raw_in = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False
-						dialog.destroy()
-					dialog.destroy()
-						
-					
-				elif response == Gtk.ResponseType.CANCEL:
-					condition = False
+		return(state)
 			
-			
-	def begin_conversion_black(self, widget):
-		global dark_in
-		global single_dark
-		global state
-		condition = True
+	def convert_to_fits(self, widget, data_type, data_list, state):
+		fits_response = AtF.avi_to_fits(data_list, data_type, state)
+		return(fits_response)
 	
-		while condition == True:
-			if (dark_in != 0):
-				n = AtF.avi_to_fits(group=dark_in, switch=state, Imtype="dark")
-				condition = False
-			if (single_dark != 0):
-				o = AtF.avi_to_fits(single=single_dark, switch=state, Imtype="dark")
-				condition = False
-			else:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-				wrn_dialog.format_secondary_text("Please Select a File or Folder")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = File_Folder_Dialog(self)
-					response = dialog.run()
-					if response == Gtk.ResponseType.CANCEL:
-						print("Cancelling")
-						dialog.destroy()
-						condition = False
-					elif response == Gtk.ResponseType.OK:
-						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							single_dark = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False 
-						dialog.destroy()
-						
-					elif response == Gtk.ResponseType.ACCEPT:
-						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							dark_in = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False
-						dialog.destroy()
-					dialog.destroy()
-					
-				elif response == Gtk.ResponseType.CANCEL:
-					condition = False
-			
-	def begin_conversion_grey(self, widget):
-		global bias_in
-		global single_bias
-		global state
-		condition = True
-	
-		while condition == True:
-			if (bias_in != 0):
-				n = AtF.avi_to_fits(group=bias_in, switch=state, Imtype="bias")
-				condition = False
-			if (single_bias != 0):
-				o = AtF.avi_to_fits(single=single_bias, switch=state, Imtype="bias")
-				condition = False
-			else:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-				wrn_dialog.format_secondary_text("Please Select a File or Folder")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = File_Folder_Dialog(self)
-					response = dialog.run()
-					if response == Gtk.ResponseType.CANCEL:
-						print("Cancelling")
-						dialog.destroy()
-						condition = False
-					elif response == Gtk.ResponseType.OK:
-						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							single_bias = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False 
-						dialog.destroy()
-						
-					elif response == Gtk.ResponseType.ACCEPT:
-						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							bias_in = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False
-						dialog.destroy()
-					dialog.destroy()
-					
-				elif response == Gtk.ResponseType.CANCEL:
-					condition = False
-			
-	def begin_conversion_white(self, widget):
-		global flat_in
-		global single_flat
-		global state
-		condition = True
-	
-		while condition == True:
-			if (flat_in != 0):
-				n = AtF.avi_to_fits(group=flat_in, switch=state, Imtype="flat")
-				condition = False
-			if (single_flat != 0):
-				o = AtF.avi_to_fits(single=single_flat, switch=state, Imtype="flat")
-				condition = False
-			else:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-				wrn_dialog.format_secondary_text("Please Select a File or Folder")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = File_Folder_Dialog(self)
-					response = dialog.run()
-					if response == Gtk.ResponseType.CANCEL:
-						print("Cancelling")
-						dialog.destroy()
-						condition = False
-					elif response == Gtk.ResponseType.OK:
-						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							single_flat = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False 
-						dialog.destroy()
-						
-					elif response == Gtk.ResponseType.ACCEPT:
-						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							flat_in = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False
-						dialog.destroy()
-					dialog.destroy()
-						
-					
-				elif response == Gtk.ResponseType.CANCEL:
-					condition = False
-	
-	def begin_conversion_black_white(self, widget):
-		global flatdark_in
-		global single_flatdark
-		global state
-		condition = True
-	
-		while condition == True:
-			if (flatdark_in != 0):
-				n = AtF.avi_to_fits(group=flatdark_in, switch=state, Imtype="flat_dark")
-				condition = False
-			if (single_flatdark != 0):
-				o = AtF.avi_to_fits(single=singleflat_dark, switch=state, Imtype="flat_dark")
-				condition = False
-			else:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Files/Folders to Convert")
-				wrn_dialog.format_secondary_text("Please Select a File or Folder")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = File_Folder_Dialog(self)
-					response = dialog.run()
-					if response == Gtk.ResponseType.CANCEL:
-						print("Cancelling")
-						dialog.destroy()
-						condition = False
-					elif response == Gtk.ResponseType.OK:
-						dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							single_flatdark = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False 
-						dialog.destroy()
-						
-					elif response == Gtk.ResponseType.ACCEPT:
-						dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
-						response = dialog.run()
-						if response == Gtk.ResponseType.OK:
-							flatdark_in = dialog.get_filename()
-						elif response == Gtk.ResponseType.CANCEL:
-							condition = False
-						dialog.destroy()
-					dialog.destroy()
-					
-				elif response == Gtk.ResponseType.CANCEL:
-					condition = False
-	
-	def create_thermal_master(self,widget):
-		global dark_in
-		global bias_in
-		
-		if (dark_in == 0):
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Primary Folder Type")
-			wrn_dialog.format_secondary_text("Please select a folder containing dark currents")
+	def create_thermal_master(self, widget, data_list, mode):	
+		if data_list[0].data == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Dark Current Data")
+			wrn_dialog.format_secondary_text("Please select a folder containing dark current images")
 			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
 			wrn_dialog.destroy()
+			if response == Gtk.ResponseType.OK:
+				Asterism.input_selection(0, data_list)
+			elif response == Gtk.ResponseType.CANCEL:
+				return(1)
 			
-		elif (bias_in == 0): 
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Secondary Folder Type")
-			wrn_dialog.format_secondary_text("Please select a folder containing bias images")
+		elif data_list[1].data == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No Bias Frame Data")
+			wrn_dialog.format_secondary_text("Please select a folder containing bias frame images")
 			response = wrn_dialog.run()
-			if response == Gtk.ResponseType.OK:
-				print("Warning Accepted")
-			elif response == Gtk.ResponseType.CANCEL:
-				print("Warning Cancelled")
 			wrn_dialog.destroy()
-		
+			if response == Gtk.ResponseType.OK:
+				Asterism.input_selection(1, data_list) 
+			elif response == Gtk.ResponseType.CANCEL:
+				return(2)
+				
 		else:
 			mc.master_creation(dark_in, bias_in, "dark", "bias")
 			
@@ -1324,16 +1083,6 @@ class Asterism(Gtk.Window):
 				print("darkflat continues")
 				df.darkflat(master_flat, master_dark, raw_style, exp_time, master_exp_time)
 				checking_condition = False
-				
-	def raw_folder_selection(self,widget): 
-		global raw_in
-		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-		response = dialog.run()
-		if response == Gtk.ResponseType.OK:
-			raw_in = dialog.get_filename()
-		elif response == Gtk.ResponseType.CANCEL:
-			pass
-		dialog.destroy()
 		
 	def on_exp_time_changed(self,widget):
 		global exp_time

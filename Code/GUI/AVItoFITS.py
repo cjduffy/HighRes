@@ -1,4 +1,4 @@
-def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
+def avi_to_fits(data_list, data_type, switch=False):
 	
 	import os
 	import numpy as np
@@ -8,12 +8,13 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 	
 	l = 1
 	
-	if (single != "none"):
+	if data_list[data_type].data_mode == "single":
 		n = 1
-		if single.endswith(".avi"):
-			filepath = os.path.dirname(os.path.realpath(single))
-			actual_file = os.path.basename(single)
-			video_capture = cv2.VideoCapture(single)
+		if data_list[data_type].data.endswith(".avi"):
+			full_filepath = data_list[data_type].data
+			filepath = os.path.dirname(os.path.realpath(full_filepath))
+			actual_file = os.path.basename(full_filepath)
+			video_capture = cv2.VideoCapture(full_filepath)
 			
 			filename = actual_file.replace(".avi", "")
 			folder = filepath+"/"+filename
@@ -21,6 +22,10 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 			if not os.path.exists(folder):
 				os.mkdir(folder)
 				
+			Imtype = data_list[data_type].data_type
+			if Imtype == "raw":
+				Imtype = "frame"
+			
 			while True:	
 				filename_initial = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
 				if os.path.isfile(filename_initial):
@@ -52,17 +57,21 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 		else:
 			return(100)
 			
-	elif (group != "none"):
-		for file in os.listdir(group):
+	elif data_list[data_type].data_mode == "group":
+		for file in os.listdir(data_list[data_type].data):
 			n = 1
 			if file.endswith(".avi"):
-				filepath = group+"/"+file
+				filepath = data_list[data_type].data+"/"+file
 				video_capture = cv2.VideoCapture(filepath)
 				
 				folder = filepath.replace(".avi", "")
 				
 				if not os.path.isdir(folder):
 						os.mkdir(folder)
+						
+				Imtype = data_list[data_type].data_type
+				if Imtype == "raw":
+					Imtype = "frame"
 						
 				while True:	
 						filename_initial = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
@@ -95,3 +104,5 @@ def avi_to_fits(single="none", group="none", switch=False, Imtype="frame"):
 		return (200)
 		
 	return(1) 
+
+	

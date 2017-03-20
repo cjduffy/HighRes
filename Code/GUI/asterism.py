@@ -104,9 +104,11 @@ class Asterism(Gtk.Window):
 		master_exp_time = 0
 		percentage = 0
 		methodology = "Sobel"
+		histograms = []
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
 		histogram_no = 0 
 		hist_count = 0
+		int_hist = 0 
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -930,89 +932,62 @@ class Asterism(Gtk.Window):
 		
 	def on_methodology_changed(self, button, name, methodology):
 		if button.get_active():
-			if name == "Sobel":
-				methodology = "Sobel"
-			elif name == "Fisher":
-				methodology = "Fisher"
+			methodology = name
 		return(methodology)
 			
-	def on_percent_changed(self,widget):
+	def on_percent_changed(self, widget):
 		percentage = self.spinbutton_3.get_value()
 		return(percentage)
 		
-	def luckframeselection(self,widget):
-		global percentage
-		global methodology
-		global raw_in
-		global luck_delete
-		checker = True
-		
-		while checker == True:
-			if raw_in == 0:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "No RAW folder")
-				wrn_dialog.format_secondary_text("Select a folder to convert")
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
-					response_2 = dialog.run()
-					if response_2 == Gtk.ResponseType.OK:
-						raw_in = dialog.get_filename()
-						dialog.destroy()
-						checker = False 
-					elif response_2 == Gtk.ResponseType.CANCEL:
-						dialog.destroy() 
-						checker = False
-				elif response == Gtk.ResponseType.CANCEL:
-					checker = False
-		
-		if raw_in == 0:
-			print("no raw data")
-						
-		elif percentage == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Percentage zero")
-			wrn_dialog.format_secondary_text("Lower percentage threshold not set")
-			wrn_dialog.run()
+	def luckframeselection(self, widgt, data_list, percentage, methodology, luck_delete):
+		if data_list[4].raw_data == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Data found")
+			wrn_dialog.format_secondary_text("Please select a folder containing FITS files in the Raw Data section")
+			response = wrn_dialog.run()
 			wrn_dialog.destroy()
+			return(1)
 			
+		elif percentage == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Percentage Zero")
+			wrn_dialog.format_secondary_text("Please adjust the lower percentage threshold")
+			response = wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		if methodology == "Sobel":
+			lfs.sobel_selection(data_list, percentage, luck_delete)
+		elif methodology == "Fisher":
+			lfs.fisher_selection(data_list, percentage, luck_delete)
 		else:
-			if methodology == "Sobel":
-				lfs.sobel_selection(raw_in, percentage, luck_delete)
-			elif methodology == "Fisher":
-				lfs.fisher_slection(raw_in, percentage, luck_delete)
+			print("Methodology Error")
 		
-	def luckframedelete(self, switch, gparam):
-		global luck_delete
+		return(data_list)
 		
+	def luckframedelete(self, switch, gparam):		
 		if switch.get_active():
 			luck_delete = "delete"
 		else:
 			luck_delete = "retain"
+		return(luck_delete)
 	
 	def auto_hot_pixel(self, widget):
 		print("auto hot pixel")
 		
 	def histogram_number(self, widget):
-		global histogram_no
 		histogram_no = self.spinbutton_4.get_value()
+		return(histogram_no)
 		
-	def gen_hist_one(self,widget):
-		global histogram_no
-		global hist_count
-		global histograms
-		global raw_in
-		global int_hist
-		
+	def gen_hist_one(self, widget, data_list, histogram_no, hist_count, histograms, int_hist):
 		if histogram_no == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No histograms to generate")
-			wrn_dialog.format_secondary_text("Change the number on the spin button to set up a number of histograms to generate")
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Histograms to Generate")
+			wrn_dialog.format_secondary_text("Please adjust the number of histograms to generate")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
 			return(1)
 			
-		elif raw_in == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No histograms to generate")
-			wrn_dialog.format_secondary_text("Please select files to generate histograms from")
+		elif data_list[4].raw_data == 0: 
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Histograms to Generate")
+			wrn_dialog.format_secondary_text("No data to generate histograms from")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
 			return(2)
@@ -1022,64 +997,54 @@ class Asterism(Gtk.Window):
 			counter = 0
 			counter_2 = 0
 			int_hist = int(histogram_no)
-			filelist = [] 
-			histograms = []
+			filelist = []
 			
-			lucky_frame_path = raw_in+"/lucky_frames"
-
+			lucky_frame_path = data_list[4].data+"/lucky_frames"
+			
 			if os.path.isdir(lucky_frame_path):
-				for file in os.listdir(lucky_frame_path):
+				for file in os.path.listdir(lucky_frame_path):
 					if file.endswith(".fits"):
 						counter += 1
 						filelist.append(file)
+			
 			else:
-				for file in os.listdir(raw_in):
+				for file in os.path.listdir(data_list[4].data):
 					if file.endswith(".fits"):
 						counter += 1
 						filelist.append(file)
 						
-			for counter_2 in range(0,int_hist):
+			for conuter_2 in range(0,int_hist):
 				random_number = random.randrange(1, counter, 1)
-				im_to_hist = raw_in+"/"+filelist[random_number]
+				im_to_hist = data_list[4].data+"/"+filelist[random_number]
 				im = fits.open(im_to_hist)
 				im_data = im[0].data
 				im_hist, im_bins = np.histogram(im_data, bins="auto")
 				im_histogram = [im_hist, im_bins]
 				histograms.append(im_histogram)
-			
+				
 			f = Asterism.create_plot(histograms[hist_count])
-			
-			return(f)
+			return(f, int_hist)
 			
 		else:
-			hist_count = 1
-			
+			hist_count = 1 
 			f = Asterism.create_plot(histograms[hist_count])
+			return(f, histograms)
 			
-			return(f)
-			
-	def gen_prev_hist(self,widget):
-		global hist_count
-		global int_hist
-		
+	def gen_prev_hist(self, widget, histograms, hist_count):
 		if hist_count == 1:
 			hist_count = 1
-			
-		else: 
+		else:
 			hist_count -= 1
 			Asterism.create_plot(histograms[hist_count])
+		return(hist_count)
 		
-	def gen_next_hist(self,widget):
-		global hist_count 
-		global int_hist
-		
+	def gen_next_hist(self, widget, histograms, hist_count, int_hist):
 		if hist_count == int_hist:
 			hist_count = int_hist
-			
 		else:
 			hist_count += 1
 			Asterism.create_plot(histograms[hist_count])
-			
+		return(hist_count)
 		
 	def man_hot_pixel(self, widget):
 		print("manual hot pixel")
@@ -1087,13 +1052,9 @@ class Asterism(Gtk.Window):
 	def add_hist_thresh(self, widget):
 		print("add threshold value")
 		
-	def create_plot(histogram):
-		global hist_count 
-		global fig
-		
+	def create_plot(histogram, hist_count, fig):
 		x = 0
-		
-		log_hist = []
+		log_hist = [] 
 		
 		for x in range(0,len(histogram[0])):
 			if histogram[0][x] != 0:
@@ -1101,7 +1062,7 @@ class Asterism(Gtk.Window):
 			else:
 				log_hist.append(0)
 			x += 1
-		
+			
 		plt.clf()
 		ax = fig.add_subplot(111)
 		plt.bar(histogram[1][:-1], log_hist, width = 1)
@@ -1110,10 +1071,9 @@ class Asterism(Gtk.Window):
 		plt.ylabel("Log Frequency")
 		plt.title("Histogram "+str(hist_count))
 		fig.canvas.draw()
+		
+		return(0)
 				
-		print(histogram[0])
-				
-			
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

@@ -1,4 +1,4 @@
-def fisher_selection(folder, percentage, state="Delete"):
+def fisher_selection(data_list, percentage, state="Delete"):
 	import numpy as np
 	import os
 	from astropy.io import FITS
@@ -9,6 +9,8 @@ def fisher_selection(folder, percentage, state="Delete"):
 	x = 1
 	fisher_sum = 0
 	Fisher_Sum = dict()
+	
+	folder = data_list[4].raw_data
 	
 	for file in folder:
 		image = fits.open(file)
@@ -58,6 +60,8 @@ def sobel_selection(folder, percentage, state="Delete"):
 	l = 1
 	x = 1
 	sobel_number = dict()
+	
+	folder = data_list[4].raw_data
 	
 	for file in folder:
 		m = 1

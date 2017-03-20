@@ -6,7 +6,6 @@ import math
 from scipy.signal import convolve2d
 #Final version won't need PIL
 from PIL import Image
-from matplotlib import pyplot
 
 def _nd_window(data, filter_function):
     """
@@ -53,7 +52,7 @@ def Logpolar(image, angles=None, radii=None):
     output = ndii.map_coordinates(image, [x, y])
     return output, log_base
     
-def makeSquare(image, **kwargs):
+def makeSquare(image):
 	if image.shape[0] <= image.shape[1]:
 		diff_x = image.shape[1] - image.shape[0]
 	else:
@@ -78,6 +77,30 @@ def shaping(data1, data2):
 		y = y1 - y2
 		data2 = np.lib.pad(data2, ((x,0), (y,0) ), 'constant', constant_values=(0,0))
 	return data1, data2
+
+def reshape(image1, image2):
+	diff_x, diff_y = tuple(np.subtract(image2.shape, image1.shape))
+	diff_x_arr = np.zeros(diff_x)
+	for n in range (0,int(diff_x/2)+1):
+
+		diff_x_arr = np.insert(diff_x_arr, n, n)
+		n += 1
+	for m in range (1,int(diff_x/2)+1):
+
+		diff_x_arr = np.insert(diff_x_arr, m+n, image2.shape[0]-m)
+		m += 1
+	diff_y_arr = np.zeros(diff_y)
+	for k in range (0,int(diff_y/2)+1):
+
+		diff_y_arr = np.insert(diff_y_arr, k, k)
+		k += 1
+	for l in range (1,int(diff_y/2)+1):
+
+		diff_y_arr = np.insert(diff_y_arr, l+k, image2.shape[1]-l)
+		l += 1
+	image2 = np.delete(image2, diff_x_arr, 0)
+	image2 = np.delete(image2, diff_y_arr, 1)
+	return image2
 
 def FMI(data1, data2, polar):
 	if data1.shape[0] != data1.shape[1]:
@@ -111,113 +134,70 @@ def FMI(data1, data2, polar):
 	
 	return iSPMF
 
-##Image read in
+def registration(data1, data2):
 
-##Currently Hard wired for something in my working directory as I have decided how best to loop this yet.
-image1 = Image.open('scifestt.jpg')
-image2 = Image.open('scifestt.jpg')
+	if data1.ndim == 3:
+		data1 = data1[:,:,0]
+	if data2.ndim == 3:
+		data2 = data2[:,:,0]
 
-data1 = np.array((image1))
-data2 = np.array((image2))
+	iSPMF1 = FMI(data1, data2, False)
 
-if data1.ndim == 3:
-	data1 = data1[:,:,0]
-if data2.ndim == 3:
-	data2 = data2[:,:,0]
-data2 = rotate(data2, 45, reshape = True)
+	rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
+	scaling_factor = np.exp(scale)
+	angle = 180.0 * rotation / iSPMF1.shape[0]
 
+	if scaling_factor > 1.8:
+		angle = -1 * angle
+		scaling_factor = 1.0 / scaling_factor
+		if scale > 1.8:
+			raise ValueError("You broke it, the scale differnce was too large") #GTK waning probably better here also
 
-iSPMF1 = FMI(data1, data2, False)
+	n, m = (data2.shape/scaling_factor)
+	n = int(n)
+	m = int(m)
+	scaled_image = np.resize(data2, (n,m))
 
-rotation, scale = np.unravel_index(np.argmax(iSPMF1), iSPMF1.shape)
-scaling_factor = np.exp(scale)
-angle = 180.0 * rotation / iSPMF1.shape[0]
-
-
-if scaling_factor > 1.8:
-	angle = -1 * angle
-	scaling_factor = 1.0 / scaling_factor
-	print(scaling_factor)
-	if scale > 1.8:
-		raise ValueError("You broke it, the scale differnce was too large") #GTK waning probably better here also
-print(angle)
-print(scaling_factor)
-
-
-n, m = (data2.shape/scaling_factor)
-n = int(n)
-m = int(m)
-scaled_image = np.resize(data2, (n,m))
-
-scaled_image_2 = scaled_image
-rot1 = rotate(scaled_image, -1 * angle, reshape = False)
-rot2 = rotate(scaled_image_2, -1* (angle+180), reshape = False)
+	scaled_image_2 = scaled_image
+	rot1 = rotate(scaled_image, -1 * angle, reshape = False)
+	rot2 = rotate(scaled_image_2, -1* (angle+180), reshape = False)
 	
+	iSPMF2 = FMI(data1, rot1, True)
+	iSPMF3 = FMI(data1, rot2, True)
 
-iSPMF2 = FMI(data1, rot1, True)
-iSPMF3 = FMI(data1, rot2, True)
+	A = np.amax(iSPMF2)
+	B = np.amax(iSPMF3)
 
-A = np.amax(iSPMF2)
-B = np.amax(iSPMF3)
-print(A)
-print(B)
+	if A > B:
+		corrected_rotation = reshape(data1, rot1)
 
-if A > B:
-	print("Do your thing with iSPMF2")
-	corrected_rotation = rot1
-	diff_x, diff_y = tuple(np.subtract(corrected_rotation.shape, data1.shape))
-	print(corrected_rotation.shape)
-	n = 0
-	diff_x_arr = np.zeros(diff_x)
-	for n in range (0,diff_x):
-
-		diff_x_arr = np.insert(diff_x_arr, n, n)
-		n += 1
-	m = 0
-	diff_y_arr = np.zeros(diff_y)
-	for n in range (0,diff_y):
-
-		diff_y_arr = np.insert(diff_y_arr, m, m)
-		m += 1
-	pyplot.subplot(211)
-	pyplot.imshow(corrected_rotation)
-	corrected_rotation = np.delete(corrected_rotation, diff_x_arr, 0)
-	corrected_rotation = np.delete(corrected_rotation, diff_y_arr, 1)
-	pyplot.subplot(212)
-	pyplot.imshow(corrected_rotation)
-	#pyplot.show()
-	print(corrected_rotation.shape)
-
-elif B > A:
-	#This needs updated to mirror the if statement when it works properly
-	print("Do your thing with iSPMF3")
-	corrected_rotation = rot2
+	elif B > A:
+		corrected_rotation = reshape(data1, rot2)
 	
-else:
-	print("Image appears identical under all roations after scaling, attempting to proceed but results may be imperfect")
-	#Probably worth calling either a GTK wanring window if this condition is met or a terminal wanring but I am too tired to work out the latter and the former is not my skill set.
-	corrected_rotation = rotate(image2, angle)
+	else:
+		print("Image appears identical under all roations after scaling, attempting to proceed but results may be imperfect")
+		#Probably worth calling either a GTK wanring window if this condition is met or a terminal wanring but I am too tired to work out the latter and the former is not my skill set.
+		corrected_rotation = reshape(data1, rot1)
 	
-f0 = fft2(data1)
-f1 = fft2(corrected_rotation)
-ir = abs(ifft2((f0 * f1.conjugate()) / (abs(f0) * abs(f1))))
-t0, t1 = np.unravel_index(np.argmax(ir), ir.shape)
+	f0 = fft2(data1)
+	f1 = fft2(corrected_rotation)
+	iSPMF4 = abs(ifft2((f0 * f1.conjugate()) / (abs(f0) * abs(f1))))
+	t0, t1 = np.unravel_index(np.argmax(iSPMF4), iSPMF4.shape)
 
-if t0 > f0.shape[0] // 2:
-	t0 -= f0.shape[0]
-if t1 > f0.shape[1] // 2:
-	t1 -= f0.shape[1]
-
-corrected_image = ndii.shift(corrected_rotation, [t0, t1])
+	if t0 > f0.shape[0] // 2:
+		t0 -= f0.shape[0]
+	if t1 > f0.shape[1] // 2:
+		t1 -= f0.shape[1]
+		
+	corrected_image = ndii.shift(corrected_rotation, [t0, t1])
+	return corrected_image
 	
 def imshow(im0, im1, im2, im3= None, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot
 	if cmap is None:
-		cmap = 'coolwarm'
+		cmap = 'rainbow'
 	if im3 is None:
-		#if im2.shape != im0.shape:
-		#	im2, im0 = shaping(im2, im0)
 		im3 = abs(im2/2 + im0/2)
 	pyplot.subplot(221)
 	pyplot.imshow(im0, cmap, **kwargs)
@@ -229,4 +209,16 @@ def imshow(im0, im1, im2, im3= None, cmap=None, **kwargs):
 	pyplot.imshow(im2, cmap, **kwargs)
 	pyplot.show()
 
-imshow(data1, data2, corrected_rotation)
+##Image read in
+
+##Currently Hard wired for something in my working directory as I have decided how best to loop this yet.
+image1 = Image.open('scifestt.jpg')
+image2 = Image.open('scifestt.jpg')
+data1 = np.array((image1))
+data2 = np.array((image2))
+data2 = rotate(data2, 315, reshape = True)
+corrected_image = registration(data1, data2)
+
+if data1.ndim == 3:
+	data1 = data1[:,:,0]
+imshow(data1, data2, corrected_image)

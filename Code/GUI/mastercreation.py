@@ -46,9 +46,9 @@ def master_creation(data_list, master_structure, mode):
 	hdu = fits.PrimaryHDU()
 	hdu.data = master_im
 
-	if mode = "dark":
+	if mode == "dark":
 		filename = "Master"+str(data_list[0].data_type)+".fits"
-	elif mode = "flat":
+	elif mode == "flat":
 		filename = "Master"+str(data_list[1].data_type)+".fits"	
 	
 	master_structure.set_master_filename(mode, filename)

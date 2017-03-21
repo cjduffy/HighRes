@@ -224,7 +224,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Scalable Thermal Frame")
-		button1.connect("clicked", self.create_thermal_master, data_list)
+		button1.connect("clicked", self.create_master, data_list, "dark")
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -353,7 +353,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Master Flat Field")
-		button1.connect("clicked", self.create_flat_master, data_list)
+		button1.connect("clicked", self.create_master, data_list, "flat")
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -557,7 +557,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Retrieve Created Masters")
-		button1.connect("clicked", self.master_retrieval)
+		button1.connect("clicked", self.master_retrieval, master_structure)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -577,11 +577,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select Master Flat Field")
-		button1.connect("clicked", self.manual_master_flat)
+		button1.connect("clicked", self.manual_master_selection, "flat", master_structure)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		button2 = Gtk.Button("Select Master Dark Current")
-		button2.connect("clicked", self.manual_master_dark)
+		button2.connect("clicked", self.manual_master_selection, "dark", master_structure)
 		ver_box.pack_start(button2, True, True, 0)
 		
 		listbox.add(row)
@@ -601,7 +601,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Perform Darkflat Correction")
-		button1.connect("clicked", self.darkflat_correction)
+		button1.connect("clicked", self.darkflat_correction, master_structure, data_list)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -684,7 +684,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Generate First Histogram")
-		button1.connect("clicked", self.gen_hist_one)
+		button1.connect("clicked", self.gen_hist_one, data_list, histogram_no, hist_count, histograms, int_hist)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -692,9 +692,7 @@ class Asterism(Gtk.Window):
 		
 		head_box = Gtk.Box()
 		row.add(head_box)
-		global fig
 		fig = plt.figure()
-		
 		canvas = FigureCanvas(fig)
 		canvas.set_size_request(400,400)
 		head_box.pack_start(canvas, True, True, 0)
@@ -710,7 +708,6 @@ class Asterism(Gtk.Window):
 		label = Gtk.Label("Enter Threshold Value:\n(Press Enter to Confirm)")
 		hor_box.pack_start(label, True, True, 0)
 		
-		global hist_entry
 		hist_entry = Gtk.Entry()
 		hist_entry.connect("activate", self.add_hist_thresh)
 		hor_box.pack_start(hist_entry, True, True, 0)
@@ -724,11 +721,11 @@ class Asterism(Gtk.Window):
 		ver_box.pack_start(hor_box, True, True, 0)
 		
 		button1 = Gtk.Button("Previous Histogram")
-		button1.connect("clicked", self.gen_prev_hist)
+		button1.connect("clicked", self.gen_prev_hist, histograms, hist_count, int_hist)
 		hor_box.pack_start(button1, True, True, 0)
 		
 		button2 = Gtk.Button("Next Histogram")
-		button2.connect("clicked", self.gen_next_hist)
+		button2.connect("clicked", self.gen_next_hist, histograms, hist_count, int_hist)
 		hor_box.pack_start(button2, True, True, 0)
 		
 		listbox.add(row)
@@ -818,9 +815,9 @@ class Asterism(Gtk.Window):
 		return(fits_response)
 		
 	def create_master(self, widget, data_list, mode):
-		if mode = "dark":
+		if mode == "dark":
 			stage = 0
-		elif mode = "flat":
+		elif mode == "flat":
 			stage = 2	
 		counter = stage	
 		for counter in range(stage, stage+1):
@@ -872,7 +869,7 @@ class Asterism(Gtk.Window):
 			dialog.destroy()
 			if response == Gtk.ResponseType.OK:
 				pass
-			elif response == Gtk.ResponseType.CANCEL
+			elif response == Gtk.ResponseType.CANCEL:
 				return("selection cancelled") 
 		
 		dialog = Gtk.FileChooserDialog("Select Master File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
@@ -882,7 +879,7 @@ class Asterism(Gtk.Window):
 			master_file = fits.open(master_structure.get_master_filename(mode))
 			master_data = master_file[0].data
 			master_structure.set_master(mode, master_data)
-		else response == Gtk.ResponseType.CANCEL:
+		elif response == Gtk.ResponseType.CANCEL:
 			dialog.destroy()
 			return("selection cancelled")
 		

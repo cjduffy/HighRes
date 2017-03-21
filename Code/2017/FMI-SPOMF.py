@@ -151,7 +151,11 @@ def registration(data1, data2):
 		angle = -1 * angle
 		scaling_factor = 1.0 / scaling_factor
 		if scale > 1.8:
-			raise ValueError("You broke it, the scale differnce was too large") #GTK waning probably better here also
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Breached Scaling Height")
+			wrn_dialog.format_secondary_text("Scaling factor too large to proceed.")
+			wrn_dialog.run()
+			wrn_dialog.destroy
+			return("Scaling Factor Too Large")
 
 	n, m = (data2.shape/scaling_factor)
 	n = int(n)
@@ -175,8 +179,10 @@ def registration(data1, data2):
 		corrected_rotation = reshape(data1, rot2)
 	
 	else:
-		print("Image appears identical under all roations after scaling, attempting to proceed but results may be imperfect")
-		#Probably worth calling either a GTK wanring window if this condition is met or a terminal wanring but I am too tired to work out the latter and the former is not my skill set.
+		dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
+		dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
+		dialog.run()
+		dialog.destroy()
 		corrected_rotation = reshape(data1, rot1)
 	
 	f0 = fft2(data1)

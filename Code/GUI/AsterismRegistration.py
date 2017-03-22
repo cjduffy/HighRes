@@ -79,26 +79,34 @@ def shaping(data1, data2):
 		data2 = np.lib.pad(data2, ((x,0), (y,0) ), 'constant', constant_values=(0,0))
 	return data1, data2
 	
-def reshape(image1, image2):
-	diff_x, diff_y = tuple(np.subtract(image2.shape, image1.shape))
+def reshape(image_1, image_2):
+	diff_x, diff_y = tuple(np.subtract(image_2.shape, image_1.shape))
 	diff_x_arr = np.zeros(diff_x)
 	diff_y_arr = np.zeros(diff_y)
-	arrays = [diff_x_arr, diff_y_arr] 
+	arrays = [diff_x_arr, diff_y_arr]
+	n = m = k = l = 0
 	counter_1 = [n,m]
 	counter_2 = [k,l]
 	stage = 0
 	
 	if diff_x % 2 == 1:
-		range_end = int(math.ceil(diff_x/2))
+		range_end_one = int(math.ceil(diff_x/2))
 	elif diff_x % 2 == 0:
-		range_end = int(diff_x/2)
+		range_end_one = int(diff_x/2)
+	
+	if diff_y % 2 == 1:
+		range_end_two = int(math.ceil(diff_y/2))
+	elif diff_y % 2 == 0:
+		range_end_two
+		
+	range_ends = [range_end_one, range_end_two]
 	
 	for stage in range(0,1):
-		for counter_1[stage] in range(0, range_end):
+		for counter_1[stage] in range(0, range_ends[stage]):
 			arrays[stage] = np.insert(arrays[stage], counter_1[stage], counter_1[stage])
-			counter[stage] += 1 
-		for counter_2[stage] in range(1, range_end):
-			arrays[stage] = np.insert(arrays[stage], counter_2[stage]+counter_1[stage], image2.shape[0]-counter_2[stage])
+			counter_1[stage] += 1 
+		for counter_2[stage] in range(1, range_ends[stage]):
+			arrays[stage] = np.insert(arrays[stage], counter_2[stage]+counter_1[stage], image_2.shape[0]-counter_2[stage])
 			counter_2[stage] += 1
 		np.delete(image_2, arrays[stage], stage)
 		stage += 1

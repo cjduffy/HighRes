@@ -6,7 +6,7 @@ from scipy.fftpack import fft2, ifft2, fftshift
 from scipy.ndimage import rotate
 import scipy.ndimage.interpolation as ndii 
 import math
-#Final version won't need astropy
+import os
 from astropy.io import fits
 
 def _nd_window(data, filter_function):
@@ -67,20 +67,12 @@ def Logpolar(image, angles=None, radii=None):
 	output = ndii.map_coordinates(image, [x, y])
 	return output, log_base
 
-def imshow(im0, im1, im2, im3= None, cmap=None, **kwargs):
+def imshow(im, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot
 	if cmap is None:
 		cmap = 'coolwarm'
-	if im3 is None:
-	   im3 = abs(im2/2 + im0/2)
-	pyplot.subplot(221)
-	pyplot.imshow(im0, cmap, **kwargs)
-	pyplot.subplot(222)
-	pyplot.imshow(im1, cmap, **kwargs)
-	pyplot.subplot(223)
-	pyplot.imshow(im3, cmap, **kwargs)
-	pyplot.subplot(224)
+	pyplot.plot
 	pyplot.imshow(im2, cmap, **kwargs)
 	pyplot.show()
 
@@ -183,8 +175,6 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 	
 	bg = np.zeros_like(image)
 	dest = embed_to(bg, dest0)
-	print(image.shape)
-	print(dest.shape)
 	return dest
 	
 def check_rotation(image_1, image_2, image_3):
@@ -219,18 +209,20 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
-		dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
-		dialog.run()
-		dialog.destroy()
+		#Not an expert in GTK so something might be wrong here, maybe not
+		#dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
+		#dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
+		#dialog.run()
+		#dialog.destroy()
 		res = 0
 	
 	return res
 	
 def translation(image_1, image_2):
 	
-	translation_vector = correlation(image_1, image_2)
-	return -1*translation_vector
+	translation_difference = correlation(image_1, image_2)
+	
+	return translation_difference
 
 def similarity(image_1, image_2):
 	
@@ -258,34 +250,49 @@ def similarity(image_1, image_2):
 		angle =+ 180
 		del image_3_180
 		
-	translation_vector = translation(image_1, image_3)
-
-	print(translation_vector)
+	translation_difference = translation(image_1, image_3)
+	
+	translation_vector = -1 * translation_difference
 	
 	dictionary = dict(translation_vector = translation_vector, angle =  angle, scale = scale)
 	
 	return dictionary
 	
-def Similarity(image_1, image_2):
+def stack(image_1, image_2):
 	
-	dictionary = similarity(image_1, image_2)
+	image1 = fits.open(image_1)
+	data1 = image1[0].data
+
+	image2 = fits.open(image_2)
+	data2 = image2[0].data
+
+	if data1.ndim == 3:
+		data1 = data1[:,:,0]
+	if data2.ndim == 3:
+		data2 = data2[:,:,0]
 	
-	image_3 = transform_image(image_2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
+	dictionary = similarity(data1, data2)
 	
-	return image_3
+	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
+	
+	image_3 = abs(data1/2 + data3/2)
+	
+	return image_3, data2
 	
 
-image1 = fits.open('frame_2_1.fits')
-data1 = image1[0].data
+def Registration(folder):
+	path_1 = folder+'/'+'frame_1_1.fits'
+	for file in os.listdir(folder):
+		if file.endswith('.fits'):
+			if file == 'fram_1_1_fits':
+				continue 
+			path_2 = folder+'/'+file
+			image_1 = path_1
+			image_2 = path_2
+			image_1 = stack(image_1, image_2)
+	return(image_1)
 
-image2 = fits.open('frame_2_950.fits')
-data2 = image2[0].data
-
-if data1.ndim == 3:
-	data1 = data1[:,:,0]
-if data2.ndim == 3:
-	data2 = data2[:,:,0]
-
-image3 = Similarity(data1, data2)
-
-imshow(data1, data2, image3)
+#Script to run for proof of testing	
+image_3 = Registration('1000 - BLUE')
+#line only produces image output for testing
+imshow(image_3)

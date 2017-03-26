@@ -277,7 +277,7 @@ def stack(image_1, image_2):
 	
 	image_3 = abs(data1/2 + data3/2)
 	
-	return image_3, data2
+	return image_3
 	
 
 def Registration(folder):
@@ -290,7 +290,7 @@ def Registration(folder):
 			image_1 = path_1
 			image_2 = path_2
 			image_1 = stack(image_1, image_2)
-	return(image_1)
+	return image_1
 
 #Script to run for proof of testing	
 image_3 = Registration('1000 - BLUE')

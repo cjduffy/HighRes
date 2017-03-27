@@ -776,24 +776,28 @@ class Asterism(Gtk.Window):
 				folder = dialog.get_filename()
 				data_list[data_type].set_data(folder)
 				data_list[data_type].set_mode("group")
+				dialog.destroy()
 			elif response == Gtk.ResponseType.CANCEL:
 				print("Folder Selection Cancelled")
+				dialog.destroy()
 			dialog.destroy()
 		elif response == Gtk.ResponseType.OK:
-			dialog == Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+			dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 			response = dialog.run()
 			if response == Gtk.ResponseType.OK:
 				filename = dialog.get_filename()
-				data_list[data_type].set_data(folder)
+				data_list[data_type].set_data(filename)
 				data_list[data_type].set_mode("single")
+				dialog.destroy()
 			elif response == Gtk.ResponseType.CANCEL:
 				print("File Selection Cancelled")
+				dialog.destroy()
 			dialog.destroy()
 		elif response == Gtk.ResponseType.CANCEL:
 			print("Selection Cancelled")
 		return(data_list)
 		
-	def raw_folder_selection(self,widget,data_list): 
+	def raw_folder_selection(self, widget, data_list): 
 		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select", Gtk.ResponseType.OK))
 		response = dialog.run()
 		if response == Gtk.ResponseType.OK:

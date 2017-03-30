@@ -13,6 +13,8 @@ import random
 import os
 import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
+from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
+import hotpixel as hp
 
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -108,7 +110,8 @@ class Asterism(Gtk.Window):
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
 		histogram_no = 0 
 		hist_count = 0
-		int_hist = 0 
+		int_hist = 0
+		thresholds = 0
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -274,7 +277,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 2, data_list, state)
+		button1.connect("clicked",self.input_selection, 2, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field AVI to Frames")
@@ -318,7 +321,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked", self.input_selection, 3, data_list, state)
+		button1.connect("clicked", self.input_selection, 3, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
@@ -380,7 +383,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 4, data_list, state)
+		button1.connect("clicked",self.input_selection, 4, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split AVI to Frames")
@@ -425,7 +428,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select a folder containing FITS")
-		button1.connect("clicked", self.raw_folder_selection)
+		button1.connect("clicked", self.raw_folder_selection, data_list)
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -608,7 +611,13 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Master Flat & Dark Correction", "Master Flat & Dark Correction")
 		
+		scrolled_window = Gtk.ScrolledWindow()
+		scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+		scrolled_window.show()
+		scrolled_window.set_min_content_width(390)
+		
 		listbox = Gtk.ListBox()
+		scrolled_window.add(listbox)
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE) 
 		
 		row = Gtk.ListBoxRow()
@@ -690,12 +699,15 @@ class Asterism(Gtk.Window):
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
 		
-		head_box = Gtk.Box()
+		head_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		row.add(head_box)
 		fig = plt.figure()
 		canvas = FigureCanvas(fig)
-		canvas.set_size_request(400,400)
+		canvas.set_size_request(350,350)
 		head_box.pack_start(canvas, True, True, 0)
+		
+		toolbar = NavigationToolbar(canvas, Asterism)
+		head_box.pack_start(toolbar, True, True, 0)
 		
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
@@ -709,7 +721,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(label, True, True, 0)
 		
 		hist_entry = Gtk.Entry()
-		hist_entry.connect("activate", self.add_hist_thresh)
+		hist_entry.connect("activate", self.add_hist_thresh, hist_count, thresholds)
 		hor_box.pack_start(hist_entry, True, True, 0)
 		
 		listbox.add(row)
@@ -750,14 +762,14 @@ class Asterism(Gtk.Window):
 		
 		listbox.add(row)
 		
-		stack.add_titled(listbox, "Hot Pixel Correction", "Hot Pixel Correction")
+		stack.add_titled(scrolled_window, "Hot Pixel Correction", "Hot Pixel Correction")
 		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
 		outer_box.pack_end(stack, True, True, 0)
 
-		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 725, 1200, True)
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 670, 1200, True)
 		
 		image = Gtk.Image()
 		image.set_from_pixbuf(pixbuf)
@@ -999,20 +1011,12 @@ class Asterism(Gtk.Window):
 			counter_2 = 0
 			int_hist = int(histogram_no)
 			filelist = []
-			
-			lucky_frame_path = data_list[4].data+"/lucky_frames"
-			
-			if os.path.isdir(lucky_frame_path):
-				for file in os.path.listdir(lucky_frame_path):
-					if file.endswith(".fits"):
-						counter += 1
-						filelist.append(file)
-			
-			else:
-				for file in os.path.listdir(data_list[4].data):
-					if file.endswith(".fits"):
-						counter += 1
-						filelist.append(file)
+			thresholds = [None]*int_hist
+		
+			for file in os.path.listdir(data_list[4].data):
+				if file.endswith(".fits"):
+					counter += 1
+					filelist.append(file)
 						
 			for conuter_2 in range(0,int_hist):
 				random_number = random.randrange(1, counter, 1)
@@ -1047,11 +1051,46 @@ class Asterism(Gtk.Window):
 			Asterism.create_plot(histograms[hist_count])
 		return(hist_count)
 		
-	def man_hot_pixel(self, widget):
-		print("manual hot pixel")
+	def man_hot_pixel(self, widget, data_list, thresholds):
+		if data_list[4].raw_data == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Raw Data")
+			wrn_dialog.format_secondary_text("No Raw Data, please select Raw Data in the appropriate tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif thresholds == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Thresholds")
+			wrn_dialog.format_secondary_text("Please select threshold values or perform the automatic correction")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		else:
+			for file in data_list[4].raw_data:
+				hp.Man_Hot_Pix_Correction(file, thresholds)
+			return(0)
 		
-	def add_hist_thresh(self, widget):
-		print("add threshold value")
+	def add_hist_thresh(self, widget, hist_count, thresholds):
+		hist_thresh = self.entry.get_text()
+		
+		if thresholds = 0:
+			return(1)
+		
+		elif thresholds[hist_count] != None:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Threshold Value Already Set")
+			dialog.format_secondary_text("The threshold value for this histogram is already set, overwrite?")
+			response = dialog.run()
+			if response == Gtk.ResponseType.OK:
+				thresholds[hist_count] = hist_thresh
+			elif response == Gtk.ResponseType.CANCEL:
+				pass
+			dialog.destroy()
+		
+		else:
+			thresholds[hist_count] = hist_thresh
+			
+		return(hist_thresh)
 		
 	def create_plot(histogram, hist_count, fig):
 		x = 0

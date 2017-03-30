@@ -32,8 +32,8 @@ def fisher_selection(data_list, percentage, state="Delete"):
 		square_img = mag_img**2
 		fisher_sum = np.sum(square_img) 
 		Fisher_Sum[l] = 4*fisher_sum
-		l += 1
-		
+		l += 1	
+	
 	maximum = max(Fisher_Sum)
 	
 	if state == "Retain":
@@ -50,6 +50,10 @@ def fisher_selection(data_list, percentage, state="Delete"):
 					destination = folder+"/"+"lucky_frames/"+file
 					os.rename(file, destination)
 			x += 1
+			
+	data_list[4].set_raw_data(self, folder+"/lucky_frames/")
+	
+	return(data_list)
 			
 def sobel_selection(folder, percentage, state="Delete"):
 	import numpy as np 
@@ -92,6 +96,10 @@ def sobel_selection(folder, percentage, state="Delete"):
 					destination = folder+"/"+"lucky_frames/"+file
 					os.rename(file, destination)
 			x += 1
+			
+	data_list[4].set_raw_data(self, folder+"/lucky_frames/")
+	
+	return(data_list)
 			
 			
 		

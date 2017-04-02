@@ -1032,7 +1032,7 @@ class Asterism(Gtk.Window):
 			
 		elif data_list[4].raw_data == 0: 
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "No Histograms to Generate")
-			wrn_dialog.format_secondary_text("No data to generate histograms from")
+			wrn_dialog.format_secondary_text("No data to generate histograms from, please select data in raw data tab")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
 			return(2)

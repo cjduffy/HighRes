@@ -112,6 +112,7 @@ class Asterism(Gtk.Window):
 		hist_count = 0
 		int_hist = 0
 		thresholds = 0
+		zero_threshold = 0 
 		
 		Gtk.Window.__init__(self, title="Asterism")
 		self.set_border_width(10)
@@ -650,6 +651,26 @@ class Asterism(Gtk.Window):
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
 		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		label = Gtk.Label("Number of Zeroes Before Threshold:")
+		ver_box.pack_start(label, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.spinbutton5 = Gtk.SpinButton()
+		self.spinbutton5.set_adjustment(adjustment)
+		self.spinbutton5.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.spinbutton5.set_update_policy(policy)
+		self.spinbutton5.connect("value-changed", self.zerothreshold)
+		hor_box.pack_start(self.spinbutton5, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
 		box = Gtk.Box()
 		row.add(box)
 		label = Gtk.Label("Manual Correction")
@@ -983,8 +1004,17 @@ class Asterism(Gtk.Window):
 			luck_delete = "retain"
 		return(luck_delete)
 	
-	def auto_hot_pixel(self, widget):
-		print("auto hot pixel")
+	def auto_hot_pixel(self, widget, data_list, zero_threshold):
+		if data_list[4].raw_data == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Raw Data")
+			wrn_dialog.format_secondary_text("Please input raw data in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		hp.Auto_Hot_Pix_Correction(data_list, zero_threshold)
+		
+		return(0)
 		
 	def histogram_number(self, widget):
 		histogram_no = self.spinbutton_4.get_value()
@@ -1113,6 +1143,11 @@ class Asterism(Gtk.Window):
 		fig.canvas.draw()
 		
 		return(0)
+		
+	def zerothreshold(self, widget):
+		zero_threshold = self.spinbutton5.get_value()
+		
+		return(zero_threshold)
 				
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)

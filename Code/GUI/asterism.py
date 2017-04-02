@@ -1074,7 +1074,7 @@ class Asterism(Gtk.Window):
 	def add_hist_thresh(self, widget, hist_count, thresholds):
 		hist_thresh = self.entry.get_text()
 		
-		if thresholds = 0:
+		if thresholds == 0:
 			return(1)
 		
 		elif thresholds[hist_count] != None:

@@ -72,6 +72,9 @@ class data_structure:
 	def set_raw_exp(self, raw_exp_time):
 		self.raw_exp_time = raw_exp_time
 		
+	def set_state(self, boolean):
+		self.state = boolean
+		
 
 class File_Folder_Dialog(Gtk.Dialog):
 
@@ -108,7 +111,6 @@ class Asterism(Gtk.Window):
 		methodology = "Sobel"
 		histograms = []
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
-		histogram_no = 0 
 		hist_count = 0
 		int_hist = 0
 		thresholds = 0
@@ -149,11 +151,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 0, data_list)
+		data_list = button1.connect("clicked",self.input_selection, 0, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Dark Current AVI to Frames")
-		button3.connect("clicked", self.convert_to_fits, 0, data_list, state)
+		button3.connect("clicked", self.convert_to_fits, 0, data_list)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -170,7 +172,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.on_switch_activated)
+		data_list = switch.connect("notify::active", self.on_switch_activated, data_list, 0)
 		switch.set_active(False)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -193,11 +195,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 1, data_list)
+		data_list = button1.connect("clicked",self.input_selection, 1, data_list)
 		ver_box.add(button1)
 
 		button3 = Gtk.Button("Split Bias AVI to Frames")
-		button3.connect("clicked", self.convert_to_fits, 1, data_list, state)
+		button3.connect("clicked", self.convert_to_fits, 1, data_list)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -214,7 +216,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.on_switch_activated)
+		data_list = switch.connect("notify::active", self.on_switch_activated, data_list, 1)
 		switch.set_active(False)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -228,7 +230,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Scalable Thermal Frame")
-		button1.connect("clicked", self.create_master, data_list, "dark")
+		masters = button1.connect("clicked", self.create_master, data_list, masters, "dark")
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -251,7 +253,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton.set_update_policy(policy)
-		self.spinbutton.connect("value-changed", self.on_master_exp_time_changed)
+		masters = self.spinbutton.connect("value-changed", self.on_master_exp_time_changed, masters)
 		ver_box.pack_start(self.spinbutton, True, True, 0)
 		
 		listbox.add(row)
@@ -278,11 +280,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 2, data_list)
+		data_list = button1.connect("clicked",self.input_selection, 2, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field AVI to Frames")
-		button3.connect("clicked", self.convert_to_fits, 2, data_list, state)
+		button3.connect("clicked", self.convert_to_fits, 2, data_list)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -299,7 +301,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.on_switch_activated)
+		data_list = switch.connect("notify::active", self.on_switch_activated, data_list, 2)
 		switch.set_active(False)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -322,11 +324,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked", self.input_selection, 3, data_list)
+		data_list = button1.connect("clicked", self.input_selection, 3, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split Flat Field Dark Current AVI to Frames")
-		button3.connect("clicked", self.convert_to_fits, 3, data_list, state)
+		button3.connect("clicked", self.convert_to_fits, 3, data_list)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -343,7 +345,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.on_switch_activated)
+		data_list = switch.connect("notify::active", self.on_switch_activated, data_list, 3)
 		switch.set_active(False)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -357,7 +359,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Create Master Flat Field")
-		button1.connect("clicked", self.create_master, data_list, "flat")
+		masters = button1.connect("clicked", self.create_master, data_list, masters, "flat")
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -384,11 +386,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0) 
 		
 		button1 = Gtk.Button("Choose Input")
-		button1.connect("clicked",self.input_selection, 4, data_list)
+		data_list = button1.connect("clicked",self.input_selection, 4, data_list)
 		ver_box.add(button1)
 		
 		button3 = Gtk.Button("Split AVI to Frames")
-		button3.connect("clicked", self.convert_to_fits, 4, data_list, state)
+		button3.connect("clicked", self.convert_to_fits, 4, data_list)
 		ver_box.add(button3)
 		
 		listbox.add(row)
@@ -405,7 +407,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.on_switch_activated)
+		data_list = switch.connect("notify::active", self.on_switch_activated, data_list, 4)
 		switch.set_active(False)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -429,7 +431,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select a folder containing FITS")
-		button1.connect("clicked", self.raw_folder_selection, data_list)
+		data_list = button1.connect("clicked", self.raw_folder_selection, data_list)
 		ver_box.add(button1)
 		
 		listbox.add(row)
@@ -452,7 +454,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton_2.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton_2.set_update_policy(policy)
-		self.spinbutton_2.connect("value-changed", self.on_exp_time_changed, data_list)
+		exp_time = self.spinbutton_2.connect("value-changed", self.on_exp_time_changed, data_list)
 		ver_box.pack_start(self.spinbutton_2, True, True, 0)
 		
 		listbox.add(row)
@@ -479,12 +481,12 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.RadioButton.new_with_label_from_widget(None, "Sobel Method")
-		button1.connect("toggled", self.on_methodology_changed, "Sobel")
+		methodology = button1.connect("toggled", self.on_methodology_changed, "Sobel")
 		ver_box.pack_start(button1, True, True, 0)
 		
 		button2 = Gtk.RadioButton.new_from_widget(button1)
 		button2.set_label("Fisher Selection")
-		button2.connect("toggled", self.on_methodology_changed, "Fisher")
+		methodology = button2.connect("toggled", self.on_methodology_changed, "Fisher")
 		ver_box.pack_start(button2, True, True, 0) 
 		
 		listbox.add(row)
@@ -505,7 +507,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton_3.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton_3.set_update_policy(policy)
-		self.spinbutton_3.connect("value-changed", self.on_percent_changed)
+		percentage = self.spinbutton_3.connect("value-changed", self.on_percent_changed)
 		ver_box.pack_start(self.spinbutton_3, True, True, 0)
 		
 		listbox.add(row)
@@ -521,7 +523,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		switch = Gtk.Switch()
-		switch.connect("notify::active", self.luckframedelete)
+		luck_delete = switch.connect("notify::active", self.luckframedelete)
 		switch.set_active(True)
 		ver_box.pack_start(switch, True, True, 0)
 		
@@ -535,7 +537,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select Lucky Frames")
-		button1.connect("clicked", self.luckframeselection)
+		data_list = button1.connect("clicked", self.luckframeselection)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -561,7 +563,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Retrieve Created Masters")
-		button1.connect("clicked", self.master_retrieval, master_structure)
+		masters = button1.connect("clicked", self.master_retrieval, masters)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -581,11 +583,11 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Select Master Flat Field")
-		button1.connect("clicked", self.manual_master_selection, "flat", master_structure)
+		masters = button1.connect("clicked", self.manual_master_selection, "flat", masters)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		button2 = Gtk.Button("Select Master Dark Current")
-		button2.connect("clicked", self.manual_master_selection, "dark", master_structure)
+		masters = button2.connect("clicked", self.manual_master_selection, "dark", masters)
 		ver_box.pack_start(button2, True, True, 0)
 		
 		listbox.add(row)
@@ -605,7 +607,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Perform Darkflat Correction")
-		button1.connect("clicked", self.darkflat_correction, master_structure, data_list)
+		data_list = button1.connect("clicked", self.darkflat_correction, masters, data_list)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -645,7 +647,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(ver_box, True, True, 0)
 		
 		button1 = Gtk.Button("Perform Automatic Hot-Pixel Correction")
-		button1.connect("clicked", self.auto_hot_pixel)
+		data_list = button1.connect("clicked", self.auto_hot_pixel)
 		ver_box.pack_start(button1, True, True, 0)
 		
 		listbox.add(row)
@@ -665,7 +667,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton5.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton5.set_update_policy(policy)
-		self.spinbutton5.connect("value-changed", self.zerothreshold)
+		zero_threshold = self.spinbutton5.connect("value-changed", self.zerothreshold)
 		hor_box.pack_start(self.spinbutton5, True, True, 0)
 		
 		listbox.add(row)
@@ -702,7 +704,7 @@ class Asterism(Gtk.Window):
 		self.spinbutton_4.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.spinbutton_4.set_update_policy(policy)
-		self.spinbutton_4.connect("value-changed", self.histogram_number)
+		histogram_no = self.spinbutton_4.connect("value-changed", self.histogram_number)
 		ver_box.pack_start(self.spinbutton_4, True, True, 0)
 		
 		listbox.add(row)
@@ -742,7 +744,7 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(label, True, True, 0)
 		
 		hist_entry = Gtk.Entry()
-		hist_entry.connect("activate", self.add_hist_thresh, hist_count, thresholds)
+		hist_thresh = hist_entry.connect("activate", self.add_hist_thresh, hist_count, thresholds)
 		hor_box.pack_start(hist_entry, True, True, 0)
 		
 		listbox.add(row)
@@ -851,7 +853,7 @@ class Asterism(Gtk.Window):
 		fits_response = AtF.avi_to_fits(data_list, data_type, state)
 		return(fits_response)
 		
-	def create_master(self, widget, data_list, mode):
+	def create_master(self, widget, data_list, masters, mode):
 		if mode == "dark":
 			stage = 0
 		elif mode == "flat":
@@ -868,8 +870,8 @@ class Asterism(Gtk.Window):
 				elif response == Gtk.ResponseType.CANCEL:
 					return(1)
 			counter += 1	
-		mc.master_creation(data_list, master_structure, mode)
-		return(data_list, master_structure)
+		masters = mc.master_creation(data_list, masters, mode)
+		return(masters)
 
 	def master_retrieval(self, widget, master_structure):
 		if master_structure.master_dark_filename == 0 or master_structure.master_flat_filename == 0:

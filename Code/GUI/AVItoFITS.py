@@ -1,20 +1,19 @@
-def avi_to_fits(data_list, data_type, switch=False):
+def avi_to_fits(data_list_entry):
 	
 	import os
+	from astropy.io import fits
 	import numpy as np
 	import cv2
-	from astropy.io import fits
 	from PIL import Image
 	
 	l = 1
 	
-	if data_list[data_type].data_mode == "single":
+	if data_list_entry.data_mode == "single":
 		n = 1
-		if data_list[data_type].data.endswith(".avi"):
-			full_filepath = data_list[data_type].data
-			filepath = os.path.dirname(os.path.realpath(full_filepath))
-			actual_file = os.path.basename(full_filepath)
-			video_capture = cv2.VideoCapture(full_filepath)
+		if data_list_entry.data_filedata.endswith(".avi"):
+			filepath = os.path.dirname(os.path.realpath(data_list_entry.data_filedata))
+			actual_file = os.path.basename(data_list_entry.data_filedata)
+			video_capture = cv2.VideoCapture(data_list_entry.data_filedata)
 			
 			filename = actual_file.replace(".avi", "")
 			folder = filepath+"/"+filename
@@ -22,87 +21,101 @@ def avi_to_fits(data_list, data_type, switch=False):
 			if not os.path.exists(folder):
 				os.mkdir(folder)
 				
-			Imtype = data_list[data_type].data_type
-			if Imtype == "raw":
-				Imtype = "frame"
-			
-			while True:	
-				filename_initial = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
+			if data_list_entry.data_type == "raw":
+				imtype = "frame"
+			else:
+				imtype = data_list_entry.data_type
+				
+			while True:
+				filename_initial = folder+"/"+str(imtype)+"_"+str(l)+"_"+str(n)+".fits"
 				if os.path.isfile(filename_initial):
 					l = l + 1
 				else:
 					break
-	
+					
 			while True:
 				ret, frame = video_capture.read()
 				if (ret != True):
 					break
-					
-				filename_tif = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
-				filename_fits = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
-			
-			#write the TIF
-				cv2.imwrite(filename_tif,frame)
-			
-			#convert to FITS and remove TIF
+				
+				filename_tif = folder+"/"+str(imtype)+"_"+str(l)+"_"+str(n)+".tif"
+				filename_fits = filename_tif.replace(".tif", ".fits")
+				
+				cv2.imwrite(filename_tif, frame)
+				
 				hdu = fits.PrimaryHDU()
 				im = Image.open(filename_tif)
 				hdu.data = np.array(im)
-				hdu.writeto(filename_fits, overwrite = True)
-				if switch != True: 
+				hdu.writeto(filename_fits, overwrite=True)
+				
+				if data_list_entry.state == False: 
 					os.remove(filename_tif)
-			
-			#increment counter
-				n = n+1
+					
+				n += 1
 		else:
-			return(100)
-			
-	elif data_list[data_type].data_mode == "group":
-		for file in os.listdir(data_list[data_type].data):
+			wrn_dialog = Gtk.Dialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "File not AVI")
+			wrn_dialog.format_secondary_text("The selected file is not an avi and cannot be split into FITS")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+		
+	elif data_list_entry.data_mode == "group":
+		for file in os.listdir(data_list_entry.data_filedata):
 			n = 1
-			if file.endswith(".avi"):
-				filepath = data_list[data_type].data+"/"+file
-				video_capture = cv2.VideoCapture(filepath)
+			
+			if data_list_entry.data_filedata.endswith(".avi"):
+				filepath = os.path.dirname(os.path.realpath(data_list_entry.data_filedata))
+				actual_file = os.path.basename(data_list_entry.data_filedata)
+				video_capture = cv2.VideoCapture(data_list_entry.data_filedata)
 				
-				folder = filepath.replace(".avi", "")
+				filename = actual_file.replace(".avi", "")
+				folder = filepath+"/"+filename
 				
-				if not os.path.isdir(folder):
-						os.mkdir(folder)
+				if not os.path.exists(folder):
+					os.mkdir(folder)
+					
+				if data_list_entry.data_type == "raw":
+					imtype = "frame"
+				else:
+					imtype = data_list_entry.data_type
+					
+				while True:
+					filename_initial = folder+"/"+str(imtype)+"_"+str(l)+"_"+str(n)+".fits"
+					if os.path.isfile(filename_initial):
+						l = l + 1
+					else:
+						break
 						
-				Imtype = data_list[data_type].data_type
-				if Imtype == "raw":
-					Imtype = "frame"
-						
-				while True:	
-						filename_initial = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
-						if os.path.isfile(filename_initial):
-							l = l + 1
-						else:
-							break
-				
 				while True:
 					ret, frame = video_capture.read()
 					if (ret != True):
 						break
 					
-					filename_tif = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".tif"
-					filename_fits = folder+"/"+str(Imtype)+"_"+str(l)+"_"+str(n)+".fits"
-						
-					cv2.imwrite(filename_tif,frame)
-				
+					filename_tif = folder+"/"+str(imtype)+"_"+str(l)+"_"+str(n)+".tif"
+					filename_fits = filename_tif.replace(".tif", ".fits")
+					
+					cv2.imwrite(filename_tif, frame)
+					
 					hdu = fits.PrimaryHDU()
 					im = Image.open(filename_tif)
 					hdu.data = np.array(im)
-					hdu.writeto(filename_fits, overwrite = True)
-					if switch != True: 
+					hdu.writeto(filename_fits, overwrite=True)
+					
+					if data_list_entry.state == False: 
 						os.remove(filename_tif)
-					n = n+1
-				l = l+1
+						
+					n += 1
+				l += 1
+				
 			else:
 				pass
+				
 	else:
-		return (200)
+		print("Data mode error")
+		return(2)
 		
-	return(1) 
+	return(0)
+			
+	
 
 	

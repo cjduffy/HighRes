@@ -60,6 +60,7 @@ def similarity(im0, im1):
 
     f0, log_base = logpolar(f0)
     f1, log_base = logpolar(f1)
+    print(log_base)
 
     f0 = fft2(f0)
     f1 = fft2(f1)
@@ -196,3 +197,4 @@ def imshow(im0, im1, im2, im3=None, cmap=None, **kwargs):
     pyplot.subplot(224)
     pyplot.imshow(im2, cmap, **kwargs)
     pyplot.show()
+

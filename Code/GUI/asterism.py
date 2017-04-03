@@ -217,6 +217,18 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Dark Current", "Dark Current")
 		
+		listbox = Gtk.ListBox()
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS conversion - Flat Field")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Flat Field", "Flat Field")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -290,7 +302,7 @@ class Asterism(Gtk.Window):
 			wrn_dialog.destroy()
 			return(1)
 			
-		elif masters_entry.filename != "none":
+		elif masters_entry.master_filename != "none":
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Already Exists")
 			dialog.format_secondary_text("The master "+str(primary_data_entry.data_type)+" already exists, do you wish to replace it?")
 			response = dialog.run()

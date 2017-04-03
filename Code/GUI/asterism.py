@@ -2,7 +2,7 @@ import gi
 import AVItoFITS as AtF
 import mastercreation as mc
 import luckyframeselection as lfs
-import darkflat_Legacy as df
+#import darkflat as df
 from astropy.io import fits
 import numpy as np
 from PIL import Image
@@ -24,15 +24,15 @@ from gi.repository import Gtk
 
 class master_structure:
 	def __init__(self):
-		self.master = 0
+		self.master_filename = "none"
 		
-	def set_master_filename(string):
+	def set_master_filename(self, string):
 		self.master_filename = string
 		
-	def set_master_data(image):
+	def set_master_data(self, image):
 		self.master_data = image
 		
-	def set_exposure_time(number):
+	def set_exposure_time(self, number):
 		self.exposure_time = number
 		
 class data_structure:
@@ -191,7 +191,29 @@ class Asterism(Gtk.Window):
 		
 		scalable_dark_button = Gtk.Button("Create Scalable Dark Current")
 		scalable_dark_button.connect("clicked", self.create_master, data_list[0], data_list[1], masters[0])
-		ver_box.pack_start(scalable_dark_button)
+		ver_box.pack_start(scalable_dark_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		exp_label = Gtk.Label("Exposure Time (ms):")
+		hor_box.pack_start(exp_label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 700000, 1, 10, 0)
+		exp_spinbutton = Gtk.SpinButton()
+		exp_spinbutton.set_adjustment(adjustment)
+		exp_spinbutton.set_digits(2)
+		exp_spinbutton.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		exp_spinbutton.set_update_policy(policy)
+		exp_spinbutton.connect("value-changed", self.on_master_exp_time_changed, masters[0])
+		ver_box.pack_start(exp_spinbutton, True, True, 0)
+		
+		listbox.add(row)
 		
 		stack.add_titled(listbox, "Dark Current", "Dark Current")
 		
@@ -268,10 +290,27 @@ class Asterism(Gtk.Window):
 			wrn_dialog.destroy()
 			return(1)
 			
-		else:
-			master = mc.master_creation(primary_data_entry, secondary_data_entry, masters_entry)
-			masters_entry.set_master_filename(master)
-			return(0)
+		elif masters_entry.filename != "none":
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master Already Exists")
+			dialog.format_secondary_text("The master "+str(primary_data_entry.data_type)+" already exists, do you wish to replace it?")
+			response = dialog.run()
+			dialog.destroy()
+			if response == Gtk.ResponseType.OK:
+				pass
+			elif response == Gtk.ResponseType.CANCEL: 
+				return(2)
+			else:
+				print("Type error")
+				return(3)
+			
+		master = mc.master_creation(primary_data_entry, secondary_data_entry, masters_entry)
+		masters_entry.set_master_filename(master)
+		return(0)
+		
+	def on_master_exp_time_changed(self, widget, masters_entry):
+		exp_time = widget.get_value()
+		masters_entry.set_exposure_time(exp_time)
+		return(0)
 		
 		
 win = Asterism()

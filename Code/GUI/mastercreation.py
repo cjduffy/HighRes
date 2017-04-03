@@ -15,13 +15,14 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	for stage in range(0,1):
 		counter = 0
 		for root, dirs, files in os.walk(data_entry[stage].data_filedata):
-			for file in dirs:
+			for file in dirs and file in os.listdir(data_entry[stage].data_filedata):
 				if file.endswith(".fits"):
 					if file.startswith(str(data_entry[stage].data_type)):
 						counter += 1
 						im_fit = image.open(file)
 						im_data = im_fit[0].data
 						im_total = np.add(im_total, im_data)
+		
 		mean_pair[stage] = np.divide(im_total, counter)
 		stage += 1
 		

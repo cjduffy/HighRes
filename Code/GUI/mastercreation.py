@@ -15,9 +15,9 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	for stage in range(0,1):
 		counter = 0
 		for root, dirs, files in os.walk(data_entry[stage].data_filedata):
-			for file in dirs and file in os.listdir(data_entry[stage].data_filedata):
-				if file.endswith(".fits"):
-					if file.startswith(str(data_entry[stage].data_type)):
+			for filename in files:
+				if filename.endswith(".fits"):
+					if filename.startswith(str(data_entry[stage].data_type)):
 						counter += 1
 						im_fit = image.open(file)
 						im_data = im_fit[0].data
@@ -30,10 +30,10 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	hdu = fits.PrimaryHDU()
 	hdu.data = master_im
 	
-	filename = "Master_"+str(primary_data_entry.data_type)+".fits"
+	file_name = "Master_"+str(primary_data_entry.data_type)+".fits"
 	
-	master_entry.set_master_filename = filename
-	hdu.writeto(filename, overwrite=True)
+	master_entry.set_master_filename = file_name
+	hdu.writeto(file_name, overwrite=True)
 	
 	return(0)
 		

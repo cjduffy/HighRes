@@ -13,7 +13,7 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	
 	for stage in range(0,1):
 		counter = 0
-		for file in dirs in os.walk(data_entry[stage].data_filedata):
+		for file in os.walk(data_entry[stage].data_filedata):
 			if file.endsiwth(".fits"):
 				if file.startswith(str(data_entry[stage].data_type)):
 					counter += 1

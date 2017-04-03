@@ -4,6 +4,7 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	import os
 	from astropy.io import fits
 	
+	im_total = np.zeroes((1,1))
 	mean_prime = 0
 	mean_secondary = 0
 	mean_pair = [mean_prime, mean_secondary]
@@ -20,10 +21,6 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 						counter += 1
 						im_fit = image.open(file)
 						im_data = im_fit[0].data
-						
-						if counter == 1:
-							im_total = np.zeros((im_data.shape)) 
-						
 						im_total = np.add(im_total, im_data)
 		mean_pair[stage] = np.divide(im_total, counter)
 		stage += 1

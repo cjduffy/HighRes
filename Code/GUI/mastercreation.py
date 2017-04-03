@@ -4,7 +4,7 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	import os
 	from astropy.io import fits
 	
-	im_total = np.zeroes((1,1))
+	im_total = np.zeros((1,1))
 	mean_prime = 0
 	mean_secondary = 0
 	mean_pair = [mean_prime, mean_secondary]

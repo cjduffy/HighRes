@@ -22,8 +22,10 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 						im_fit = image.open(file)
 						im_data = im_fit[0].data
 						im_total = np.add(im_total, im_data)
-		
-		mean_pair[stage] = np.divide(im_total, counter)
+		if counter == 0:
+			print("Counter zero!")
+		else:
+			mean_pair[stage] = np.divide(im_total, counter)
 		stage += 1
 		
 	master_im = np.subtract(mean_pair[0], mean_pair[1])
@@ -36,10 +38,3 @@ def master_creation(primary_data_entry, secondary_data_entry, master_entry):
 	hdu.writeto(file_name, overwrite=True)
 	
 	return(0)
-		
-				
-				
-				
-		
-
-	

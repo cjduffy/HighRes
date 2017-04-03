@@ -233,7 +233,11 @@ class Asterism(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
-		flat_input_button 
+		flat_input_button = Gtk.Button("Choose Input")
+		flat_input_button.connect("clicked", self.input_selection, data_list[2])
+		ver_box.pack_start(flat_input_button, True, True, 0)
+		
+		listbox.add(row)
 		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		

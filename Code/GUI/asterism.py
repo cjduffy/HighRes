@@ -226,6 +226,14 @@ class Asterism(Gtk.Window):
 		head_box.pack_start(head_label, True, True, 0)
 		
 		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		flat_input_button 
 		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		
@@ -315,8 +323,7 @@ class Asterism(Gtk.Window):
 				print("Type error")
 				return(3)
 			
-		master = mc.master_creation(primary_data_entry, secondary_data_entry, masters_entry)
-		masters_entry.set_master_filename(master)
+		mc.master_creation(primary_data_entry, secondary_data_entry, masters_entry)
 		return(0)
 		
 	def on_master_exp_time_changed(self, widget, masters_entry):

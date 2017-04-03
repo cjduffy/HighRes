@@ -1,44 +1,3 @@
-
-		listbox.add(row)
-		
-		row = Gtk.ListBoxRow()
-		
-		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-		row.add(hor_box)
-		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-		hor_box.pack_start(ver_box, True, True, 0)
-		
-		button1 = Gtk.Button("Create Scalable Thermal Frame")
-		masters = button1.connect("clicked", self.create_master, data_list, masters, "dark")
-		ver_box.add(button1)
-		
-		listbox.add(row)
-		
-		row = Gtk.ListBoxRow()
-		
-		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
-		row.add(hor_box)
-		
-		label = Gtk.Label("Exposure Time (ms):")
-		hor_box.pack_start(label, True, True, 0)
-		
-		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
-		hor_box.pack_start(ver_box, True, True, 0)
-		
-		adjustment = Gtk.Adjustment(0, 0, 700000, 1, 10, 0)
-		self.spinbutton = Gtk.SpinButton()
-		self.spinbutton.set_adjustment(adjustment)
-		self.spinbutton.set_digits(2)
-		self.spinbutton.set_numeric(True)
-		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
-		self.spinbutton.set_update_policy(policy)
-		masters = self.spinbutton.connect("value-changed", self.on_master_exp_time_changed, masters)
-		ver_box.pack_start(self.spinbutton, True, True, 0)
-		
-		listbox.add(row)
-		
-		stack.add_titled(listbox, "Dark Current & Bias Frame", "Dark Current & Bias Frame")
-				
 		listbox = Gtk.ListBox()
 		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		
@@ -573,27 +532,6 @@
 		outer_box.pack_start(image, True, True, 0)
 		
 	##Functions
-	
-	def create_master(self, widget, data_list, masters, mode):
-		if mode == "dark":
-			stage = 0
-		elif mode == "flat":
-			stage = 2	
-		counter = stage	
-		for counter in range(stage, stage+1):
-			if data_list[counter].data == 0:
-				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "File not Found")
-				wrn_dialog.format_secondary_text("Please select a folder containing images of type: "+str(data_list[counter].data_type))
-				response = wrn_dialog.run()
-				wrn_dialog.destroy()
-				if response == Gtk.ResponseType.OK:
-					Asterism.input_selection(counter, data_list)
-				elif response == Gtk.ResponseType.CANCEL:
-					return(1)
-			counter += 1	
-		masters = mc.master_creation(data_list, masters, mode)
-		return(masters)
-
 	def master_retrieval(self, widget, master_structure):
 		if master_structure.master_dark_filename == 0 or master_structure.master_flat_filename == 0:
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Masters Files Not Found")

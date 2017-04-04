@@ -32,8 +32,8 @@ def Filter(image, x, y):
 def imshow(im1, im2, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot
-	#if cmap is None:
-		#cmap = 'rainbow'
+	if cmap is None:
+		cmap = 'gray'
 	pyplot.subplot(121)
 	pyplot.title("Oringial")
 	pyplot.imshow(im1, cmap, **kwargs)

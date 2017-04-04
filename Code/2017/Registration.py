@@ -71,7 +71,7 @@ def imshow(im, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot
 	if cmap is None:
-		cmap = 'coolwarm'
+		cmap = 'gray'
 	pyplot.plot
 	pyplot.imshow(im2, cmap, **kwargs)
 	pyplot.show()

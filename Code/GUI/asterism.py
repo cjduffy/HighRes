@@ -36,7 +36,7 @@ class master_structure:
 		self.exposure_time = number
 		
 class data_structure:
-	def __init__(self, data_type="none"):
+	def __init__(self, data_type):
 		self.data_type = data_type
 		self.data_mode = "single or group"
 		self.data_filedata = "filename or folder name"
@@ -104,6 +104,7 @@ class Asterism(Gtk.Window):
 		##Dark Current Listbox [DC]
 		
 		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		row = Gtk.ListBoxRow()
 		
 		head_box = Gtk.Box()
@@ -217,7 +218,10 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Dark Current", "Dark Current")
 		
+		##Flat Field [FF]
+		
 		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
 		row = Gtk.ListBoxRow()
 		
 		head_box = Gtk.Box()
@@ -237,6 +241,49 @@ class Asterism(Gtk.Window):
 		flat_input_button.connect("clicked", self.input_selection, data_list[2])
 		ver_box.pack_start(flat_input_button, True, True, 0)
 		
+		flat_conversion_button = Gtk.Button("Split AVI into FITS")
+		flat_conversion_button.connect("clicked", self.convert_to_fits, data_list[2])
+		ver_box.pack_start(flat_conversion_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		flat_switch = Gtk.Switch()
+		flat_switch.connect("notify::active", self.on_switch_activated, data_list[2])
+		flat_switch.set_active(False)
+		ver_box.pack_start(flat_switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS conversion - Flat Dark")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		flat_dark_input_button = Gtk.Button("Choose Input")
+		flat_dark_input_button.connect("clicked", self.input_selection, data_list[3])
+		ver_box.pack_start(flat_dark_input_button, True, True, 0)
+		
+		flat_dark_conversion_button = Gtk.Button("Split AVI into FITS")
+		flat_dark_conversion_button.connect("clicked", self.convert_to_fits, data_list[3])
+		ver_box.pack_start(flat_dark_conversion_button, True, True, 0)
+		
 		listbox.add(row)
 		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
@@ -245,6 +292,12 @@ class Asterism(Gtk.Window):
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
 		outer_box.pack_end(stack, True, True, 0)
+		
+		pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale("Andromeda.jpg", 670, 1200, True)
+		
+		image = Gtk.Image()
+		image.set_from_pixbuf(pixbuf)
+		outer_box.pack_start(image, True, True, 0)
 		
 ##Functions 
  

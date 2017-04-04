@@ -285,6 +285,33 @@ class Asterism(Gtk.Window):
 		ver_box.pack_start(flat_dark_conversion_button, True, True, 0)
 		
 		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		flat_dark_switch = Gtk.Switch()
+		flat_dark_switch.connect("notify::active", self.on_switch_activated, data_list[3])
+		flat_dark_switch.set_active(False)
+		ver_box.pack_start(flat_dark_switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		master_flat_button = Gtk.Button("Create Master Flat Field")
+		master_flat_button.connect("clicked", self.create_master, data_list[2], data_list[3], masters[1])
+		ver_box.pack_start(master_flat_button, True, True, 0)
+		
+		listbox.add(row)
 		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		

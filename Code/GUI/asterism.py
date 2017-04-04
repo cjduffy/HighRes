@@ -71,6 +71,10 @@ class FileFolderDialog(Gtk.Dialog):
 class Asterism(Gtk.Window):
 	def __init__(self):
 		##Initial State of Various Parameters
+		self.methodology = "Sobel"
+		self.percentage = 0
+		self.deleteluck = "delete"
+		
 		dark = data_structure("dark")
 		flat = data_structure("flat")
 		bias = data_structure("bias")
@@ -401,6 +405,84 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Raw Data", "Raw Data")
 		
+		##Lucky Frame Selection [LFS]
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Lucky Frame Selection Method")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		sobel_button = Gtk.RadioButton.new_with_label_from_widget(None, "Sobel Method")
+		sobel_button.connect("toggled", self.on_methodology_changed, "Sobel")
+		ver_box.pack_start(sobel_button, True, True, 0)
+		
+		fisher_button = Gtk.RadioButton.new_from_widget(sobel_button)
+		fisher_button.set_label("Fisher Method")
+		fisher_button.connect("toggled", self.on_methodology_changed, "Fisher")
+		ver_box.pack_start(fisher_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Lower Percentage Limit:")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		percent_adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.percent_spinbutton = Gtk.SpinButton()
+		self.percent_spinbutton.set_adjustment(percent_adjustment)
+		self.percent_spinbutton.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.percent_spinbutton.set_update_policy(policy)
+		self.percent_spinbutton.connect("value-changed", self.set_lower_percentage)
+		ver_box.pack_start(self.percent_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Delete Non-Lucky Frames?")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		luck_switch = Gtk.Switch()
+		luck_switch.connect("notify::active", self.luckframedelete)
+		luck_switch.set_active(True)
+		ver_box.pack_start(luck_switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		lucky_frame_button = Gtk.Button("Select Lucky Frames")
+		lucky_frame_button.connect("clicked", self.luckyframeselection, data_list[5])
+		ver_box.pack_start(lucky_frame_button, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Lucky Frame Selection", "Lucky Frame Selection")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -501,7 +583,56 @@ class Asterism(Gtk.Window):
 		entry.set_exposure_time(exp_time)
 		return(0)
 		
+	def on_methodology_changed(self, button, name):
+		if button.get_active():
+			methodology = name
+			self.methodology = methodology
+		return(0)	
+	
+	def set_lower_percentage(self, widget):
+		percentage = widget.get_value()
+		self.percentage = percentage
+		return(0)
 		
+	def luckframedelete(self, switch, gparam):
+		if switch.get_active(): 
+			self.deleteluck = "delete"
+		else:
+			self.deleteluck = "retain"
+		return(0)
+		
+	def luckyframeselection(self, widget, data_list_entry):
+		if data_list_entry.data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS data")
+			wrn_dialog.format_secondary_text("Please input FITS raw data on the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+		
+		elif self.percentage == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Percentage Zero")
+			wrn_dialog.format_secondary_text("Please select a percentage threshold above")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		elif os.path.isfile(data_list_entry.data_filedata):
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Single File Detected")
+			wrn_dialog.format_secondary_text("Input is a single file, process unnecessary")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(3)
+			
+		else:
+			if self.methodology == "Sobel":
+				lfs.sobel_selection(data_list_entry, self.percentage, self.deleteluck)
+			elif self.methodology == "Fisher":
+				lfs.fisher_selection(data_list_entry, self.percentage, self.deleteluck)
+			else:
+				return(4)
+		return(0)
+			
+	
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

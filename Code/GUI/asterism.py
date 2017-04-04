@@ -81,7 +81,7 @@ class Asterism(Gtk.Window):
 		master_flat = master_structure()
 		master_dark = master_structure()
 		
-		data_list = [dark, bias, flat, flat_dark, raw]
+		data_list = [dark, bias, flat, flat_dark, raw, true_raw]
 		masters = [master_dark, master_flat]
 		
 		histogram_plot = GdkPixbuf.Pixbuf.new(GdkPixbuf.Colorspace.RGB, False, 8, 1, 1)
@@ -211,7 +211,7 @@ class Asterism(Gtk.Window):
 		exp_spinbutton.set_numeric(True)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		exp_spinbutton.set_update_policy(policy)
-		exp_spinbutton.connect("value-changed", self.on_master_exp_time_changed, masters[0])
+		exp_spinbutton.connect("value-changed", self.on_exp_time_changed, masters[0])
 		ver_box.pack_start(exp_spinbutton, True, True, 0)
 		
 		listbox.add(row)
@@ -315,6 +315,92 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Flat Field", "Flat Field")
 		
+		##Raw Data [RD]
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("AVI to FITS Conversion - Raw Data")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		raw_input_button = Gtk.Button("Choose Input")
+		raw_input_button.connect("clicked", self.input_selection, data_list[4])
+		ver_box.pack_start(raw_input_button, True, True, 0)
+		
+		raw_conversion_button = Gtk.Button("Split AVI into FITS")
+		raw_conversion_button.connect("clicked", self.convert_to_fits, data_list[4])
+		ver_box.pack_start(raw_conversion_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Retain TIFs?")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		raw_switch = Gtk.Switch()
+		raw_switch.connect("notify::active", self.on_switch_activated, data_list[4])
+		raw_switch.set_active(False)
+		ver_box.pack_start(raw_switch, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("FITS Selection")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		true_raw_input_button = Gtk.Button("Choose Input")
+		true_raw_input_button.connect("clicked", self.input_selection, data_list[5])
+		ver_box.pack_start(true_raw_input_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Exposure Time (ms):")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		exp_adjustment = Gtk.Adjustment(0, 0, 100000, 1, 10, 0)
+		self.raw_exp_spinbutton = Gtk.SpinButton()
+		self.raw_exp_spinbutton.set_adjustment(exp_adjustment)
+		self.raw_exp_spinbutton.set_numeric(True)
+		self.raw_exp_spinbutton.set_digits(2)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.raw_exp_spinbutton.set_update_policy(policy)
+		self.raw_exp_spinbutton.connect("value-changed", self.on_exp_time_changed, data_list[5])
+		ver_box.pack_start(self.raw_exp_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Raw Data", "Raw Data")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -410,9 +496,9 @@ class Asterism(Gtk.Window):
 		mc.master_creation(primary_data_entry, secondary_data_entry, masters_entry)
 		return(0)
 		
-	def on_master_exp_time_changed(self, widget, masters_entry):
+	def on_exp_time_changed(self, widget, entry):
 		exp_time = widget.get_value()
-		masters_entry.set_exposure_time(exp_time)
+		entry.set_exposure_time(exp_time)
 		return(0)
 		
 		

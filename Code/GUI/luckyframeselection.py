@@ -3,6 +3,7 @@ def fisher_selection(data_list_entry, percentage, state):
 	import numpy as np
 	import os
 	from astropy.io import fits
+	import shutil 
 	
 	n = 1
 	m = 1
@@ -72,7 +73,6 @@ def sobel_selection(data_list_entry, percentage, state):
 	l = 1
 	p = 1
 	sobel_number = dict()
-	new_value = list()
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
@@ -84,16 +84,12 @@ def sobel_selection(data_list_entry, percentage, state):
 			dx = ndimage.sobel(image_data, 0, mode="constant")
 			dy = ndimage.sobel(image_data, 1, mode="constant")
 			mag = np.hypot(dx,dy)
-			value,edge = np.histogram(mag, bins="auto")
-			bin_number = len(value)
-			number_relevent_bins = math.ceil(bin_number*0.8)
 			
-			for m in range(1, number_relevent_bins):
-				new_value.append(value[len(value)-m])
-				
-			sobel_number[l] = np.mean(new_value)
-			l += 1
-		
+			average_pixel_value = np.mean(mag)
+			sobel_number[m] = average_pixel_value
+			
+			m+= 1
+			
 	maximum = max(sobel_number)
 	
 	if state == "retain":
@@ -115,11 +111,3 @@ def sobel_selection(data_list_entry, percentage, state):
 			p += 1
 	
 	return(0)
-					
-		
-		
-	
-	
-		
- 
-	

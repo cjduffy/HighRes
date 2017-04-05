@@ -18,6 +18,9 @@ def fisher_selection(data_list_entry, percentage, state):
 			image = fits.open(filepath)
 			image_data = image[0].data
 			
+			if image_data.ndim == 3:
+				image_data = image_data[:,:,0]
+			
 			x,y = image_data.shape
 			normalised_image = np.zeros((x,y))
 			

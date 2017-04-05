@@ -63,12 +63,12 @@ def avi_to_fits(data_list_entry):
 		for file in os.listdir(data_list_entry.data_filedata):
 			n = 1
 			
-			if data_list_entry.data_filedata.endswith(".avi"):
-				filepath = os.path.dirname(os.path.realpath(data_list_entry.data_filedata))
-				actual_file = os.path.basename(data_list_entry.data_filedata)
-				video_capture = cv2.VideoCapture(data_list_entry.data_filedata)
+			if file.endswith(".avi"):
+				filepath = data_list_entry.data_filedata
+				actual_file = data_list_entry.data_filedata+"/"+file
+				video_capture = cv2.VideoCapture(actual_file)
 				
-				filename = actual_file.replace(".avi", "")
+				filename = file.replace(".avi", "")
 				folder = filepath+"/"+filename
 				
 				if not os.path.exists(folder):

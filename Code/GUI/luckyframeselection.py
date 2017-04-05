@@ -12,9 +12,10 @@ def fisher_selection(data_list_entry, percentage, state):
 	fisher_sum = 0
 	Fisher_Sum = dict()
 	
-	for file in data_list_entry.data_filedata:
+	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
-			image = fits.open(file)
+			filepath = data_list_entry.data_filedata+"/"+file
+			image = fits.open(filepath)
 			image_data = image[0].data
 			
 			x,y = image.shape
@@ -60,25 +61,30 @@ def sobel_selection(data_list_entry, percentage, state):
 	import os
 	from astropy.io import fits
 	from scipy import ndimage
+	import math
 	
 	l = 1
 	p = 1
 	sobel_number = dict()
+	new_value = list()
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
-			image = fits.open(file)
+			filepath = data_list_entry.data_filedata+"/"+file
+			image = fits.open(filepath)
 			image_data = image[0].data
 			
 			m = 1
 			dx = ndimage.sobel(image_data, 0, mode="constant")
 			dy = ndimage.sobel(image_data, 1, mode="constant")
-			mag = hypot(dx,dy)
+			mag = np.hypot(dx,dy)
 			value,edge = np.histogram(mag, bins="auto")
 			bin_number = len(value)
-			number_relevent_bins = np.floor(np.multiply(bin_number, percentage/100))
+			number_relevent_bins = math.ceil(bin_number*(percentage/100))
+			
 			for m in range(1, number_relevent_bins):
-				new_value[m] = value[len(value)-m]
+				new_value.append(value[len(value)-m])
+				
 			sobel_number[l] = np.mean(new_value)
 			l += 1
 		

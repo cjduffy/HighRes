@@ -52,11 +52,11 @@ def fisher_selection(data_list_entry, percentage, state):
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"): 
-			if Fisher_sum[p] < threshold:
+			if Fisher_Sum[p] < threshold:
 				if state == "delete":
 					source = data_list_entry.data_filedata+"/"+file
 					os.remove(source)
-			if Fisher_sum[p] > threshold:
+			if Fisher_Sum[p] > threshold:
 				if state == "retain":
 					source = data_list_entry.data_filedata+"/"+file
 					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file

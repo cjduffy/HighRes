@@ -48,7 +48,7 @@ def fisher_selection(data_list_entry, percentage, state):
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"): 
-			percent = Fisher_Sum[p]/maximum
+			percent = Fisher_Sum[p]/maximum * 100
 			if percent < percentage:
 				if state == "delete":
 					source = data_list_entry.data_filedata+"/"+file
@@ -100,7 +100,7 @@ def sobel_selection(data_list_entry, percentage, state):
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
 			entry = sobel_number[p]
-			percent = entry/maximum
+			percent = entry/maximum * 100
 			p += 1
 			if percent < percentage:
 				if state == "delete":

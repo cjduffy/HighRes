@@ -441,7 +441,7 @@ class Asterism(Gtk.Window):
 		
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
-		label = Gtk.Label("Lower Percentage Limit:")
+		label = Gtk.Label("Lowest Acceptable Percentage:")
 		hor_box.pack_start(label, True, True, 0)
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)

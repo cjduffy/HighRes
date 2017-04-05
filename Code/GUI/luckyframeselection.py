@@ -48,9 +48,11 @@ def fisher_selection(data_list_entry, percentage, state):
 			if percent < percentage:
 				if state == "delete":
 					os.remove(file)
-				else:
-					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+str(file)
-					os.rename(file, destination)
+				if percent > percentage:
+					if state == "retain":
+						source = data_list_entry.data_filedata+"/"+file
+						destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file
+						shutil.move(source, destination)
 			p += 1
 			
 	return(0)
@@ -62,6 +64,7 @@ def sobel_selection(data_list_entry, percentage, state):
 	from astropy.io import fits
 	from scipy import ndimage
 	import math
+	import shutil
 	
 	l = 1
 	p = 1
@@ -89,7 +92,6 @@ def sobel_selection(data_list_entry, percentage, state):
 			l += 1
 		
 	maximum = max(sobel_number)
-	print(maximum)
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
@@ -101,9 +103,12 @@ def sobel_selection(data_list_entry, percentage, state):
 			if percent < percentage:
 				if state == "delete":
 					os.remove(file)
-				else:
-					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+str(file)
-					os.rename(file, destination)
+			if percent > percentage:
+				print(file+" is lucky")
+				if state == "retain":
+					source = data_list_entry.data_filedata+"/"+file
+					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file
+					shutil.move(source, destination)
 			p += 1
 	
 	return(0)

@@ -18,7 +18,7 @@ def fisher_selection(data_list_entry, percentage, state):
 			image = fits.open(filepath)
 			image_data = image[0].data
 			
-			x,y = image.shape
+			x,y = image_data.shape
 			normalised_image = np.zeros((x,y))
 			
 			sum_pixels = np.sum(image_data)
@@ -39,7 +39,7 @@ def fisher_selection(data_list_entry, percentage, state):
 	maximum = max(Fisher_Sum)
 	
 	if state == "retain":
-		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames/"):
+		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
 			os.mkdir(str(data_list_entry.data_filedata)+"/lucky_frames")
 	
 	for file in os.listdir(data_list_entry.data_filedata):
@@ -91,10 +91,10 @@ def sobel_selection(data_list_entry, percentage, state):
 	maximum = max(sobel_number)
 	
 	if state == "retain":
-		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames"):
-			os.mkdir(str(data_list_entry.data_filedata)+"/lucky_frmaes")
+		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
+			os.mkdir(str(data_list_entry.data_filedata)+"/lucky_frames")
 			
-	for file in data_list_entry.data_filedata:
+	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
 			percent = sobel_number[p]/maximum
 			if percent < percentage:

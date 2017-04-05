@@ -41,6 +41,10 @@ def fisher_selection(data_list_entry, percentage, state):
 			l += 1
 		
 	maximum = max(Fisher_Sum.values())
+	minimum = min(Fisher_Sum.values())
+	percentage_step = (maximum - minimum)/100
+	steps_to_take = percentage*percentage_step
+	threshold = minimum+steps_to_take
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
@@ -48,12 +52,14 @@ def fisher_selection(data_list_entry, percentage, state):
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"): 
-			percent = Fisher_Sum[p]/maximum * 100
-			if percent < percentage:
+			percent = Fisher_Sum[p]/maximum
+			im_steps_to_take = percent*percentage_steps
+			image_level = minimum+im_steps_to_take
+			if image_level < threshold:
 				if state == "delete":
 					source = data_list_entry.data_filedata+"/"+file
 					os.remove(source)
-			if percent > percentage:
+			if image_level > threshold:
 				if state == "retain":
 					source = data_list_entry.data_filedata+"/"+file
 					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file
@@ -92,6 +98,10 @@ def sobel_selection(data_list_entry, percentage, state):
 			l += 1
 			
 	maximum = max(sobel_number.values())
+	minimum = min(sobel_number.values())
+	percentage_step = (maximum - minimum)/100
+	steps_to_take = percentage*percentage_step
+	threshold = minimum+steps_to_take
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
@@ -99,15 +109,15 @@ def sobel_selection(data_list_entry, percentage, state):
 			
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
-			entry = sobel_number[p]
-			percent = entry/maximum * 100
-			
+			percent = sobel_number[p]/maximum
+			im_steps_to_take = percent*percentage_step
+			image_level = minimum+im_steps_to_take
 			p += 1
-			if percent < percentage:
+			if image_level < threshold:
 				if state == "delete":
 					source = data_list_entry.data_filedata+"/"+file
 					os.remove(source)
-			if percent > percentage:
+			if image_level > threshold:
 				if state == "retain":
 					source = data_list_entry.data_filedata+"/"+file
 					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file

@@ -53,6 +53,7 @@ def fisher_selection(data_list_entry, percentage, state):
 				if state == "delete":
 					os.remove(file)
 			if percent > percentage:
+				print(file + "is lucky")
 				if state == "retain":
 					source = data_list_entry.data_filedata+"/"+file
 					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file

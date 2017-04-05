@@ -2,7 +2,7 @@ import gi
 import AVItoFITS as AtF
 import mastercreation as mc
 import luckyframeselection as lfs
-#import darkflat as df
+import darkflat as df
 from astropy.io import fits
 import numpy as np
 from PIL import Image
@@ -25,6 +25,8 @@ from gi.repository import Gtk
 class master_structure:
 	def __init__(self):
 		self.master_filename = "none"
+		self.master_data = np.array([])
+		self.exposure_time = 0.00
 		
 	def set_master_filename(self, string):
 		self.master_filename = string
@@ -41,6 +43,7 @@ class data_structure:
 		self.data_mode = "single or group"
 		self.data_filedata = "filename or folder name"
 		self.state = False
+		self.exposure_time = 0.00
 		
 	def set_data_mode(self, mode):
 		self.data_mode = mode
@@ -70,7 +73,7 @@ class FileFolderDialog(Gtk.Dialog):
 		
 class Asterism(Gtk.Window):
 	def __init__(self):
-		##Initial State of Various Parameters
+		##Initial State of Various Parameters [IP]
 		self.methodology = "Sobel"
 		self.percentage = 0
 		self.deleteluck = "delete"
@@ -483,6 +486,77 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Lucky Frame Selection", "Lucky Frame Selection")
 		
+		##DarkFlat Correction [DFC]
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Dark Flat Correction System")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		master_check_button = Gtk.Button("Check for Masters")
+		master_check_button.connect("clicked", self.master_check, masters)
+		ver_box.pack_start(master_check_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Manual Master Selection")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		manual_dark_button = Gtk.Button("Master Dark Selection")
+		manual_dark_button.connect("clicked", self.manual_master_input, masters[0])
+		ver_box.pack_start(manual_dark_button, True, True, 0)
+		
+		manual_flat_button = Gtk.Button("Master Flat Selection")
+		manual_flat_button.connect("clicked", self.manual_master_input, masters[1])
+		ver_box.pack_start(manual_flat_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Perform Dark-Flat Correction")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		darkflat_correction_button = Gtk.Button("Perform Correction")
+		darkflat_correction_button.connect("clicked", self.perform_darkflat_correction, masters, data_list)
+		ver_box.pack_start(darkflat_correction_button, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Dark-Flat Correction", "Dark-Flat Correction")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -494,7 +568,7 @@ class Asterism(Gtk.Window):
 		image.set_from_pixbuf(pixbuf)
 		outer_box.pack_start(image, True, True, 0)
 		
-##Functions 
+	##Functions [FUNC]
  
 	def input_selection(self, widget, data_list_entry):
 		dialog = FileFolderDialog(self)
@@ -631,7 +705,110 @@ class Asterism(Gtk.Window):
 			else:
 				return(4)
 		return(0)
+		
+	def master_check(self, widget, masters):
+		if masters[0].master_filename == "none":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Master Dark Detected")
+			wrn_dialog.format_secondary_text("Please create one in the dark current tab, or manually select one below")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
 			
+		if masters[1].master_filename == "none":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Master Flat Detected")
+			wrn_dialog.format_secondary_text("Please create one in the flat field tab, or manually select one below")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			
+		else:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Both Masters Exist")
+			dialog.format_secondary_text("Masters exist, proceed to correction")
+			master_dark = fits.open(masters[0].master_filename)
+			masters[0].set_master_data(master_dark[0].data)
+			master_flat = fits.open(masters[1].master_filename)
+			masters[1].set_master_data(master_flat[0].data)
+			
+		return(0)
+		
+	def manual_master_input(self, widget, masters_entry):
+		if masters_entry.master_filename != "none":
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Master already exists")
+			dialog.format_secondary_text("A Master of this type exists already, overwrite?")
+			response = dialog.run()
+			dialog.destroy()
+			if response == Gtk.ResponseType.CANCEL:
+				return(1)
+				
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		response = dialog.run()
+		if response == Gtk.ResponseType.CANCEL:
+			dialog.destroy()
+			return(2)
+		elif response == Gtk.ResponseType.OK:
+			master_file = dialog.get_filename()
+			dialog.destroy()
+			masters_entry.set_master_filename(master_file)
+			master_image = fits.open(master_file)
+			masters_entry.set_master_data(master_image[0].data)
+		return(0)
+		
+	def perform_darkflat_correction(self, widget, masters, data_list):
+		if masters[0].master_data.size == 0:
+			if masters[0].master_filename == "none":
+				if data_list[0].data_mode == "single":
+					masters[0].set_master_filename(data_list[0].data_filedata)
+					master = fits.open(data_list[0].data_filedata)
+					masters[0].set_master_data(master[0].data)
+				else:
+					wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Master Dark")
+					wrn_dialog.format_secondary_text("Please create a master dark image in the dark current tab, or manually select one above")
+					wrn_dialog.run()
+					wrn_dialog.destroy()
+					return(1)
+			else:
+				master = fits.open(masters[0].master_filename)
+				masters[0].set_master_data(master[0].data)
+		
+		if masters[1].master_data.size == 0:
+			if masters[1].master_filename == "none":
+				if data_list[2].data_mode == "single":
+					masters[1].set_master_filename(data_list[2].data_filedata)
+					master = fits.open(data_list[2].data_filedata)
+					masters[1].set_master(master[0].data)
+				else:
+					wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Master Flat")
+					wrn_dialog.format_secondary_text("Please create a master flat image in the flat field tab, or manually select one above")
+					wrn_dialog.run()
+					wrn_dialog.destroy()
+					return(2)
+			else:
+				master = fits.open(masters[1].master_filename)
+				masters[1].set_master_data(master[0].data)
+		
+		if masters[0].exposure_time == 0.00:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Exposure Time Zero")
+			wrn_dialog.format_secondary_text("Please change the master dark exposure time in the dark current tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(3)
+			
+		elif data_list[5].exposure_time == 0.00:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Exposure Time Zero")
+			wrn_dialog.format_secondary_text("Please change the raw data exposure time in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(4)
+		
+		elif data_list[5].data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS data")
+			wrn_dialog.format_secondary_text("Please input FITS data in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(5)
+			
+		else:
+			df.darkflat_correction(masters, data_list[5])
+			
+		return(0)
 	
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)

@@ -40,7 +40,7 @@ def fisher_selection(data_list_entry, percentage, state):
 			Fisher_Sum[l] = 4*fisher_sum
 			l += 1
 		
-	maximum = max(Fisher_Sum)
+	maximum = max(Fisher_Sum.values())
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
@@ -91,7 +91,7 @@ def sobel_selection(data_list_entry, percentage, state):
 			
 			l += 1
 			
-	maximum = max(sobel_number)
+	maximum = max(sobel_number.values())
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:
@@ -101,6 +101,7 @@ def sobel_selection(data_list_entry, percentage, state):
 		if file.endswith(".fits"):
 			entry = sobel_number[p]
 			percent = entry/maximum * 100
+			
 			p += 1
 			if percent < percentage:
 				if state == "delete":

@@ -50,8 +50,10 @@ def fisher_selection(data_list_entry, percentage, state):
 		if file.endswith(".fits"): 
 			percent = Fisher_Sum[p]/maximum
 			if percent < percentage:
+				print(file + "is unlucky")
 				if state == "delete":
-					os.remove(file)
+					source = data_list_entry.data_filedata+"/"+file
+					os.remove(source)
 			if percent > percentage:
 				print(file + "is lucky")
 				if state == "retain":
@@ -87,6 +89,7 @@ def sobel_selection(data_list_entry, percentage, state):
 			mag = np.hypot(dx,dy)
 			
 			average_pixel_value = np.mean(mag)
+			print(average_pixel_value)
 			sobel_number[m] = average_pixel_value
 			
 			m+= 1
@@ -99,10 +102,13 @@ def sobel_selection(data_list_entry, percentage, state):
 			
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"):
-			percent = sobel_number[p]/maximum
+			entry = sobel_number[p]
+			percent = entry/maximum
 			if percent < percentage:
+				print(file + "is unlucky")
 				if state == "delete":
-					os.remove(file)
+					source = data_list_entry.data_filedata+"/"+file
+					os.remove(source)
 			if percent > percentage:
 				print(file+" is lucky")
 				if state == "retain":

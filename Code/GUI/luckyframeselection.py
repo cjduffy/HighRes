@@ -52,14 +52,11 @@ def fisher_selection(data_list_entry, percentage, state):
 	
 	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"): 
-			percent = Fisher_Sum[p]/maximum
-			im_steps_to_take = percent*percentage_steps
-			image_level = minimum+im_steps_to_take
-			if image_level < threshold:
+			if Fisher_sum[p] < threshold:
 				if state == "delete":
 					source = data_list_entry.data_filedata+"/"+file
 					os.remove(source)
-			if image_level > threshold:
+			if Fisher_sum[p] > threshold:
 				if state == "retain":
 					source = data_list_entry.data_filedata+"/"+file
 					destination = str(data_list_entry.data_filedata)+"/lucky_frames/"+file

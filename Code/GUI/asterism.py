@@ -77,6 +77,11 @@ class Asterism(Gtk.Window):
 		self.methodology = "Sobel"
 		self.percentage = 0
 		self.deleteluck = "delete"
+		self.zero_threshold = 1
+		self.hist_to_gen = 0
+		self.shown_hist = 0
+		self.histograms = [] 
+		self.thresholds = []
 		
 		dark = data_structure("dark")
 		flat = data_structure("flat")
@@ -557,6 +562,175 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Dark-Flat Correction", "Dark-Flat Correction")
 		
+		scrolled_window = Gtk.ScrolledWindow()
+		scrolled_window.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+		scrolled_window.show()
+		scrolled_window.set_min_content_width(390)
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		scrolled_window.add(listbox)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Hot Pixel Correction System")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Automatic Hot Pixel Correction")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		auto_hot_pixel_button = Gtk.Button("Perform Automatic Hot Pixel Correction")
+		auto_hot_pixel_button.connect("clicked", self.auto_hot_pixel, data_list[5], self.zero_threshold)
+		ver_box.pack_start(auto_hot_pixel_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Number of Zeros Before Threshold:")
+		hor_box.pack_start(label, True, True, 0) 
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.zero_spinbutton = Gtk.SpinButton()
+		self.zero_spinbutton.set_adjustment(adjustment)
+		self.zero_spinbutton.set_numeric(True)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.zero_spinbutton.set_update_policy(policy)
+		self.zero_spinbutton.connect("value-changed", self.change_zero_threshold)
+		ver_box.pack_start(self.zero_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Manual Correction")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Histogram Generation")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Number of Sample Histograms to Generate:")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment = Gtk.Adjustment(0, 0, 100, 1, 10, 0)
+		self.hist_spinbutton = Gtk.SpinButton()
+		self.hist_spinbutton.set_numeric(True)
+		self.hist_spinbutton.set_adjustment(adjustment)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.hist_spinbutton.set_update_policy(policy)
+		self.hist_spinbutton.connect("value-changed", self.change_hist_to_gen)
+		ver_box.pack_start(self.hist_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		gen_first_hist_button = Gtk.Button("Generate First Histogram")
+		gen_first_hist_button.connect("clicked", self.gen_hist_one, data_list[5])
+		ver_box.pack_start(gen_first_hist_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+		row.add(head_box)
+		fig = plt.figure()
+		canvas = FigureCanvas(fig)
+		canvas.set_size_request(350,350)
+		head_box.pack_start(canvas, True, True, 0)
+		
+		toolbar = NavigationToolbar(canvas, Asterism)
+		head_box.pack_start(toolbar, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		row.add(ver_box)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		ver_box.pack_start(hor_box, True, True, 0)
+		
+		label = Gtk.Label("Enter Threshold Value\n(Press Enter to Confirm")
+		hor_box.pack_start(label, True, True, 0)
+		
+		hist_entry = Gtk.Entry()
+		hist_entry.connect("activate", self.add_hist_thresh)
+		hor_box.pack_start(hist_entry, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		prev_hist_button = Gtk.Button("Previous Histogram")
+		prev_hist_button.connect("clicked", self.gen_prev_hist)
+		ver_box.pack_start(prev_hist_button, True, True, 0)
+		
+		next_hist_button = Gtk.Button("Next Histogram")
+		next_hist_button.connect("clicked", self.gen_next_hist)
+		ver_box.pack_start(next_hist_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		box = Gtk.Box()
+		row.add(box)
+		label = Gtk.Label("Correct Hot Pixel")
+		box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0) 
+		
+		man_hot_pixel_button = Gtk.Button("Perform Manual Hot Pixel Correction")
+		man_hot_pixel_button.connect("clicked", self.man_hot_pixel, data_list[5])
+		ver_box.pack_start(man_hot_pixel_button, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(scrolled_window, "Hot Pixel Correction", "Hot Pixel Correction")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -809,7 +983,147 @@ class Asterism(Gtk.Window):
 			df.darkflat_correction(masters, data_list[5])
 			
 		return(0)
+		
+	def auto_hot_pixel(self, widget, data_list_entry, zero_threshold):
+		if data_list[5].data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS data")
+			wrn_dialog.format_secondary_text("Please input FITS data in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		else:
+			hp.Auto_Hot_Pix_Correction(data_list_entry, zero_threshold)
+		
+		return(0)
 	
+	def change_zero_threshold(self, widget):
+		zero_threshold = widget.get_value()
+		self.zero_threshold = zero_threshold
+		return(0)
+		
+	def change_hist_to_gen(self, widget):
+		self.hist_to_gen = widget.get_value()
+		return(0)
+		
+	def gen_hist_one(self, widget, data_list_entry):
+		if self.hist_to_gen == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Histograms to Generate")
+			wrn_dialog.format_secondary_text("Please change the number of histograms to generate")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif data_list_entry.data_filedata == "none":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS Data")
+			wrn_dialog.format_secondary_text("Please input FITS data on the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		elif self.shown_hist == 0:
+			self.shown_hist = 1
+			counter = 0
+			counter_2 = 0
+			int_hist = int(self.hist_to_gen)
+			filelist = []
+			thresholds = [None]*int_hist
+			
+			for file in os.listdir(data_list_entry.data_filedata):
+				if file.endswith(".avi"):
+					counter += 1
+					filelist.append(file)
+					
+			for counter_2 in range(0,int_hist):
+				random_number = random.randrange(1, counter, 1)
+				im_to_hist = data_list_entry.data_filedata+"/"+filelist[random_number]
+				im = fits.open(im_to_hist)
+				im_data = im[0].data
+				im_hist, im_bins = np.histogram(im_data, bins="auto")
+				im_histogram = [im_hist, im_bins]
+				self.histograms.append(im_histogram)
+				
+			self.create_plot(self.histograms[self.shown_hist])
+			
+		else:
+			self.shown_hist = 1
+			self.create_plot(self.histograms[self.shown_hist])
+			
+			return(0)
+			
+	def create_plot(self):
+		x = 0
+		log_hist = []
+		
+		for x in range(0,len(self.histograms[0])):
+			if histogram[0][x] != 0:
+				log_hist.append(math.log10(self.histograms[0][x]))
+			else:
+				log_hist.append(0)
+			x += 1
+			
+		plt.clf()
+		ax = fig.add_subplot(111)
+		plt.bar(self.histograms[1][:-1], log_hist, width=1)
+		plt.xlim(min(self.histograms[1], max(self.histograms[1])))
+		plt.xlabel("Pixel Value")
+		plt.ylabel("Log Frequency")
+		plt.title("Histogram "+str(self.shown_hist))
+		fig.canvas.draw()
+		
+	def add_hist_thresh(self, widget):
+		hist_thresh = widget.get_text()
+		
+		if self.thresholds == []:
+			self.thresholds = [None]*int(self.hist_to_gen)
+			
+		if self.thresholds[self.shown_hist] != None:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Value already set")
+			dialog.format_secondary_text("Overwrite?")
+			response = dialog.run()
+			dialog.destroy()
+			
+			if response == Gtk.ResponseType.CANCEL:
+				return(1)
+				
+		self.thresholds[self.shown_hist] = hist_thresh
+		
+		return(0)
+		
+	def gen_prev_hist(self, widget):
+		if self.shown_hist == 1:
+			self.shown_hist = 1
+		else:
+			self.shown_hist -= 1
+		return(0)
+		
+	def gen_next_hist(self, widget):
+		if self.shown_hist == int(self.hist_to_gen):
+			self.shown_hist = int(self.hist_to_gen)
+		else:
+			self.shown_hist += 1
+		return(0)
+		
+	def man_hot_pixel(self, widget, data_list_entry):
+		if data_list_entry.data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS Data")
+			wrn_dialog.format_secondary_text("Please input FITS data in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif self.thresholds == []:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Thresholds")
+			wrn_dialog.format_secondary_text("Please select threshold values or perform the automatic correction")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		else: 
+			for file in os.listdir(data_list_entry.data_filedata):
+				hp.Man_Hot_Pix_Correction(file, self.thresholds)
+			return(0)
+			
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

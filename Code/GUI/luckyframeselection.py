@@ -32,10 +32,10 @@ def fisher_selection(data_list_entry, percentage, state):
 					normalised_image[n,m] = np.divide(pixel,sum_pixels)
 					
 			sqrt_img = np.sqrt(normalised_image)
-			grad_img = np.grad(sqrt_img)
-			mag_img = np.mag(grad_img)
+			grad_img = np.gradient(sqrt_img)
+			mag_img = np.abs(grad_img)
 			square_img = mag_img**2
-			fisher_sum = np.sum(sqaure_img) 
+			fisher_sum = np.sum(square_img) 
 			Fisher_Sum[l] = 4*fisher_sum
 			l += 1
 		

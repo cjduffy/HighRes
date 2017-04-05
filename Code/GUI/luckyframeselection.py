@@ -80,7 +80,7 @@ def sobel_selection(data_list_entry, percentage, state):
 			mag = np.hypot(dx,dy)
 			value,edge = np.histogram(mag, bins="auto")
 			bin_number = len(value)
-			number_relevent_bins = math.ceil(bin_number*(percentage/100))
+			number_relevent_bins = math.ceil(bin_number*0.8)
 			
 			for m in range(1, number_relevent_bins):
 				new_value.append(value[len(value)-m])
@@ -89,6 +89,7 @@ def sobel_selection(data_list_entry, percentage, state):
 			l += 1
 		
 	maximum = max(sobel_number)
+	print(maximum)
 	
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames") == True:

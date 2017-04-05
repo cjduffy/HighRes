@@ -12,7 +12,7 @@ def fisher_selection(data_list_entry, percentage, state):
 	fisher_sum = 0
 	Fisher_Sum = dict()
 	
-	for file in data_list_entry.data_filedata:
+	for file in os.listdir(data_list_entry.data_filedata):
 		image = fits.open(file)
 		image_data = image[0].data
 		
@@ -40,7 +40,7 @@ def fisher_selection(data_list_entry, percentage, state):
 		if not os.path.isdir(str(data_list_entry.data_filedata)+"/lucky_frames/"):
 			os.mkdir(str(data_list_entry.data_filedata)+"/lucky_frames")
 	
-	for file in data_list_entry.data_filedata:
+	for file in os.listdir(data_list_entry.data_filedata):
 		if file.endswith(".fits"): 
 			percent = Fisher_Sum[p]/maximum
 			if percent < percentage:

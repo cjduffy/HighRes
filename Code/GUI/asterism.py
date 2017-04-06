@@ -15,6 +15,7 @@ import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 import hotpixel as hp
 from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration
+import filtering
 
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -83,6 +84,8 @@ class Asterism(Gtk.Window):
 		self.histogram_data = []
 		self.histogram_bins = []
 		self.thresholds = []
+		self.a_value = 0
+		self.b_value = 0
 		
 		dark = data_structure("dark")
 		flat = data_structure("flat")
@@ -757,11 +760,58 @@ class Asterism(Gtk.Window):
 		
 		label_box = Gtk.Box()
 		row.add(label_box)
-		label = Gtk.Label("Filtering")
+		label = Gtk.Label("High-Pass Filtering")
 		label_box.pack_start(label, True, True, 0)
 		
 		listbox.add(row)
-		row = Gtk.ListBox()
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("A:")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment_a = Gtk.Adjustment(0, 0, 50, 0.1, 0)
+		self.a_spinbutton = Gtk.SpinButton()
+		self.a_spinbutton.set_numeric(True)
+		self.a_spinbutton.set_digits(1)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.a_spinbutton.set_update_policy(policy)
+		self.a_spinbutton.connect("value-changed", self.change_a_value)
+		ver_box.pack_start(self.a_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("B:")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		adjustment_b = Gtk.Adjustment(0, 0, 25, 0.1, 0)
+		self.b_spinbutton = Gtk.SpinButton()
+		self.b_spinbutton.set_numeric(True)
+		self.b_spinbutton.set_digits(1)
+		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
+		self.b_spinbutton.set_update_policy(policy)
+		self.b_spinbutton.connect("value-changed", self.change_b_value)
+		ver_box.pack_start(self.b_spinbutton, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		filter_button = Gtk.Button("Begin Filtering Process")
+		filter_button.connect("clicked", self.filter_image, data_list[5])
+		ver_box.pack_start(filter_button, True, True, 0) 
 		
 		listbox.add(row)
 		
@@ -1195,6 +1245,49 @@ class Asterism(Gtk.Window):
 		else:
 			Registration(data_list_entry.data_filedata)
 			return(0)
+	
+	def change_a_value(self, widget):
+		a_value = widget.get_value()
+		self.a_value = a_value
+		
+		return(0)
+		
+	def change_b_value(self, widget):
+		b_value = widget.get_value()
+		self.b_value = b_value
+		
+		return(0)
+		
+	def filter_image(self, widget, data_list_entry):
+		if data_list_entry.data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS Data")
+			wrn_dialog.format_secondary_text("Please input FITS data on the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif self.a_value == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "A Value is Zero")
+			wrn_dialog.format_secondary_text("Please change the a value spinbutton")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		elif self.b_value == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "B Value is Zero")
+			wrn_dialog.format_secondary_text("Please change the b value spinbutton")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(3)
+			
+		if data_list_entry.data_mode == "single":
+			filtering.filtering(data_list_entry.data_filedata)
+		else:
+			for file in os.listdir(data_list_entry.data_filedata):
+				if file.endswith(".fits"):
+					if file.startswith("Stacked"):
+						filtering.filtering(data_list_entry.data_filedata+"/"+file)
+		return(0)
 			
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)

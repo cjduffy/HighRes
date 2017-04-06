@@ -1,13 +1,17 @@
-import numpy as np
-from astropy.io import fits
-from scipy.fftpack import fft2, ifft2
-from scipy import ndimage
-from scipy.signal import butter
-import math
-
-def filtering(image):
+def filtering(fits_image, a, b):
+	import numpy as np
+	from astropy.io import fits
+	from scipy.fftpack import fft2, ifft2
+	from scipy import ndimage
+	import math
+	
+	open_image = fits.open(fits_image)
+	image = open_image[0].data
+	if image.ndim == 3:
+		image = image[:,:,0] 
+	
 	x, y = image.shape
-	high_pass = Filter(image, x, y)
+	high_pass = Filter(image, x, y, a, b)
 	image = image.astype('float32')
 	FT_image = fft2(image)
 	real = FT_image.real
@@ -21,36 +25,19 @@ def filtering(image):
 			
 	output = ifft2(filtered_complex)
 	output = output.astype('float32')
-	return output
+	
+	new_file = fits_image.replace(".fits", "_filtered.fits")
+	
+	hdu = fits.PrimaryHDU
+	hdu.data = output
+	hdu.writeto(new_file, overwrite=True)
+	return(0)
 
-def Filter(image, x, y):
+def Filter(image, x, y, a, b):
 	high_pass = np.zeros_like(image)
 	for m in range(1, y):
 		for n in range(1, x):
-			high_pass[n,m] = 1/(1+(25/math.sqrt((n**2 + m**2)))**(2*5))
+			high_pass[n,m] = 1/(1+(a/math.sqrt((n**2 + m**2)))**(2*b))
 	return high_pass
-
-#The value 5 and 25 should be user defined and not hard wired.
-
-def imshow(im1, im2, cmap=None, **kwargs):
-	"""Plot images using matplotlib."""
-	from matplotlib import pyplot
-	if cmap is None:
-		cmap = 'gray'
-	pyplot.subplot(121)
-	pyplot.title("Original")
-	pyplot.imshow(im1, cmap, **kwargs)
-	pyplot.subplot(122)
-	pyplot.title("Filtered")
-	pyplot.imshow(im2, cmap, **kwargs)
-	pyplot.show()
-
-image = 'Stacked Image.fits'
-image = fits.open(image)
-image = image[0].data
-if image.ndim == 3:
-		image = image[:,:,0]
-image_filtered = filtering(image)
-imshow(image, image_filtered)
 
 

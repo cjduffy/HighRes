@@ -1,4 +1,6 @@
 def _nd_window(data, filter_function):
+	import numpy as np
+	
 	"""
 	Performs an in-place windowing on N-dimensional spatial-domain data.
 	This is done to mitigate boundary effects in the FFT.
@@ -23,6 +25,8 @@ def _nd_window(data, filter_function):
 	return data
 	
 def shaping(data1, data2):
+	import numpy as np
+	
 	x1, y1 = data1.shape
 	x2, y2 = data2.shape
 	try:
@@ -36,6 +40,10 @@ def shaping(data1, data2):
 	return data1, data2
 	
 def Logpolar(image, angles=None, radii=None):
+	import scipy.ndimage.interpolation as ndii 
+	import numpy as np
+	import math
+	
 	"""Return log-polar transformed image and log base."""
 	shape = image.shape
 	center = shape[0] / 2, shape[1] / 2
@@ -57,6 +65,9 @@ def Logpolar(image, angles=None, radii=None):
 	return output, log_base
 
 def correlation(image_1, image_2):
+	from scipy.fftpack import fft2, ifft2, fftshift
+	import numpy as np
+	
 	f0 = fft2(image_1)
 	f1 = fft2(image_2)
 	
@@ -75,6 +86,9 @@ def correlation(image_1, image_2):
 	return ret
 
 def ang_scale(image_1, image_2):
+	from scipy.fftpack import fft2, ifft2, fftshift
+	import numpy as np
+	
 	shape = image_1.shape
 	
 	image_1 = fftshift(abs(fft2(image_1)))
@@ -140,6 +154,9 @@ def embed_to(where, what):
 	return where
 
 def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0)):
+	from scipy.ndimage import rotate
+	import scipy.ndimage.interpolation as ndii
+	import numpy as np
 	
 	bigshape = np.round(np.array(image.shape) * 1.2).astype(int)
 	bg = np.zeros(bigshape, image.dtype)
@@ -158,6 +175,12 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 	return dest
 	
 def check_rotation(image_1, image_2, image_3):
+	from scipy.fftpack import fft2, ifft2, fftshift
+	import numpy as np
+	import gi
+	gi.require_version('Gtk', '3.0')
+	from gi.repository import Gtk
+	
 	shape = image_1.shape
 	
 	image_1 = fftshift(abs(fft2(image_1)))
@@ -189,10 +212,10 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
-		dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
-		dialog.run()
-		dialog.destroy()
+		#dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
+		#dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
+		#dialog.run()
+		#dialog.destroy()
 		res = 0
 	
 	return res
@@ -239,6 +262,8 @@ def similarity(image_1, image_2):
 	
 def stack(image_1, image_2):
 	
+	from astropy.io import fits
+	
 	image1 = fits.open(image_1)
 	data1 = image1[0].data
 
@@ -260,13 +285,8 @@ def stack(image_1, image_2):
 	
 
 def Registration(folder):
-	import numpy as np
-	from scipy.fftpack import fft2, ifft2, fftshift
-	from scipy.ndimage import rotate
-	import scipy.ndimage.interpolation as ndii 
-	import math
 	import os
-	from astropy.io import fits
+	from astropy.io import fits	
 	
 	filelist = []
 	

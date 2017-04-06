@@ -8,6 +8,7 @@ import math
 def filtering(image):
 	x, y = image.shape
 	high_pass = Filter(image, x, y)
+	image = image.astype('float32')
 	FT_image = fft2(image)
 	real = FT_image.real
 	imaginary = FT_image.imag
@@ -35,18 +36,19 @@ def imshow(im1, im2, cmap=None, **kwargs):
 	if cmap is None:
 		cmap = 'gray'
 	pyplot.subplot(121)
-	pyplot.title("Oringial")
+	pyplot.title("Original")
 	pyplot.imshow(im1, cmap, **kwargs)
 	pyplot.subplot(122)
 	pyplot.title("Filtered")
 	pyplot.imshow(im2, cmap, **kwargs)
 	pyplot.show()
 
-image = 'frame_1_43.fits'
+image = 'Stacked Image.fits'
 image = fits.open(image)
 image = image[0].data
-image_decoloured = image[:,:,0]
-image_filtered = filtering(image_decoloured)
-imshow(image_decoloured, image_filtered)
+if image.ndim == 3:
+		image = image[:,:,0]
+image_filtered = filtering(image)
+imshow(image, image_filtered)
 
 

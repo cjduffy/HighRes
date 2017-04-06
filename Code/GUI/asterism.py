@@ -777,6 +777,7 @@ class Asterism(Gtk.Window):
 		self.a_spinbutton = Gtk.SpinButton()
 		self.a_spinbutton.set_numeric(True)
 		self.a_spinbutton.set_digits(1)
+		self.a_spinbutton.set_adjustment(adjustment_a)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.a_spinbutton.set_update_policy(policy)
 		self.a_spinbutton.connect("value-changed", self.change_a_value)
@@ -795,6 +796,7 @@ class Asterism(Gtk.Window):
 		adjustment_b = Gtk.Adjustment(0, 0, 25, 0.1, 0)
 		self.b_spinbutton = Gtk.SpinButton()
 		self.b_spinbutton.set_numeric(True)
+		self.b_spinbutton.set_adjustment(adjustment_b)
 		self.b_spinbutton.set_digits(1)
 		policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 		self.b_spinbutton.set_update_policy(policy)

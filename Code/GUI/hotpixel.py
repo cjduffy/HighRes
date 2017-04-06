@@ -11,7 +11,7 @@ def Man_Hot_Pix_Correction(image_file, thresholds):
 	x = np.matrix('0 1 0; 1 0 1; 0 1 0')
 	y = np.divide(x, 4)
 	
-	mean = convolve2d(arr,y, mode='same')
+	mean = convolve2d(array,y, mode='same')
 
 	array[array > threshold] = mean[array > treshold]
 	
@@ -62,7 +62,7 @@ def Auto_Hot_Pix_Correction(data_list, zero_number):
 		x = np.matrix('0 1 0; 1 0 1; 0 1 0')
 		y = np.divide(x, 4)
 		
-		mean = convolve2d(arr, y, mode='same')
+		mean = convolve2d(array, y, mode='same')
 		
 		array[array > threshold] = mean[array > threshold]
 		

@@ -46,11 +46,7 @@ def fisher_selection(data_list_entry, percentage, state):
 	percentage_step = (maximum - minimum)/100
 	steps_to_take = percentage*percentage_step
 	threshold = minimum+steps_to_take
-	
-	print(maximum)
-	print(threshold)
-	print(minimum)
-	
+		
 	if state == "retain":
 		if not os.path.isdir(str(data_list_entry)+"/lucky_frames_fisher") == True:
 			os.mkdir(str(data_list_entry)+"/lucky_frames_fisher")

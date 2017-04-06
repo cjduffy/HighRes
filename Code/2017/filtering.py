@@ -30,6 +30,8 @@ def Filter(image, x, y):
 			high_pass[n,m] = 1/(1+(25/math.sqrt((n**2 + m**2)))**(2*5))
 	return high_pass
 
+#The value 5 and 25 should be user defined and not hard wired.
+
 def imshow(im1, im2, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot

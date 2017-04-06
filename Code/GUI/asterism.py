@@ -13,7 +13,6 @@ import random
 import os
 import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
-from matplotlib.backends.backend_gtk3 import NavigationToolbar2GTK3 as NavigationToolbar
 import hotpixel as hp
 
 gi.require_version('GdkPixbuf', '2.0')
@@ -80,7 +79,8 @@ class Asterism(Gtk.Window):
 		self.zero_threshold = 1
 		self.hist_to_gen = 0
 		self.shown_hist = 0
-		self.histograms = [] 
+		self.histogram_data = []
+		self.histogram_bins = []
 		self.thresholds = []
 		
 		dark = data_structure("dark")
@@ -668,13 +668,10 @@ class Asterism(Gtk.Window):
 		
 		head_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 		row.add(head_box)
-		fig = plt.figure()
-		canvas = FigureCanvas(fig)
+		self.fig = plt.figure()
+		canvas = FigureCanvas(self.fig)
 		canvas.set_size_request(350,350)
 		head_box.pack_start(canvas, True, True, 0)
-		
-		toolbar = NavigationToolbar(canvas, Asterism)
-		head_box.pack_start(toolbar, True, True, 0)
 		
 		listbox.add(row)
 		row = Gtk.ListBoxRow()
@@ -878,6 +875,8 @@ class Asterism(Gtk.Window):
 				lfs.fisher_selection(data_list_entry, self.percentage, self.deleteluck)
 			else:
 				return(4)
+			new_folder = data_list_entry.data_filedata+"/lucky_frames"
+			data_list_entry.set_data_filedata(new_folder)
 		return(0)
 		
 	def master_check(self, widget, masters):
@@ -985,7 +984,7 @@ class Asterism(Gtk.Window):
 		return(0)
 		
 	def auto_hot_pixel(self, widget, data_list_entry, zero_threshold):
-		if data_list[5].data_filedata == "filename or folder name":
+		if data_list_entry.data_filedata == "filename or folder name":
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS data")
 			wrn_dialog.format_secondary_text("Please input FITS data in the raw data tab")
 			wrn_dialog.run()
@@ -993,8 +992,12 @@ class Asterism(Gtk.Window):
 			return(1)
 			
 		else:
-			hp.Auto_Hot_Pix_Correction(data_list_entry, zero_threshold)
-		
+			if data_list_entry.data_mode == "group":
+				for file in os.listdir(data_list_entry.data_filedata):
+					full_filename = data_list_entry.data_filedata+"/"+file
+					hp.Auto_Hot_Pix_Correction(full_filename, self.zero_threshold)
+			else:
+				hp.Auto_Hot_Pix_Correction(data_list_entry.data_filedata, self.zero_threshold)
 		return(0)
 	
 	def change_zero_threshold(self, widget):
@@ -1014,7 +1017,7 @@ class Asterism(Gtk.Window):
 			wrn_dialog.destroy()
 			return(1)
 			
-		elif data_list_entry.data_filedata == "none":
+		elif data_list_entry.data_filedata == "filename or folder name":
 			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS Data")
 			wrn_dialog.format_secondary_text("Please input FITS data on the raw data tab")
 			wrn_dialog.run()
@@ -1023,6 +1026,7 @@ class Asterism(Gtk.Window):
 			
 		elif self.shown_hist == 0:
 			self.shown_hist = 1
+			self.histogram_data = []
 			counter = 0
 			counter_2 = 0
 			int_hist = int(self.hist_to_gen)
@@ -1030,46 +1034,49 @@ class Asterism(Gtk.Window):
 			thresholds = [None]*int_hist
 			
 			for file in os.listdir(data_list_entry.data_filedata):
-				if file.endswith(".avi"):
+				if file.endswith(".fits"):
 					counter += 1
 					filelist.append(file)
+					
+			if self.hist_to_gen > counter:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Too Many Histograms")
+				wrn_dialog.format_secondary_text("Requested more histograms than there are images")
+				wrn_dialog.run()
+				wrn_dialog.destroy()
+				return(3)
 					
 			for counter_2 in range(0,int_hist):
 				random_number = random.randrange(1, counter, 1)
 				im_to_hist = data_list_entry.data_filedata+"/"+filelist[random_number]
 				im = fits.open(im_to_hist)
 				im_data = im[0].data
-				im_hist, im_bins = np.histogram(im_data, bins="auto")
-				im_histogram = [im_hist, im_bins]
-				self.histograms.append(im_histogram)
+				self.histogram_data.append(im_data)
 				
-			self.create_plot(self.histograms[self.shown_hist])
+			self.create_plot()
 			
 		else:
 			self.shown_hist = 1
-			self.create_plot(self.histograms[self.shown_hist])
+			self.create_plot()
 			
 			return(0)
 			
 	def create_plot(self):
 		x = 0
+		n = 0
+		m = 0
 		log_hist = []
 		
-		for x in range(0,len(self.histograms[0])):
-			if histogram[0][x] != 0:
-				log_hist.append(math.log10(self.histograms[0][x]))
-			else:
-				log_hist.append(0)
-			x += 1
-			
+		image_to_hist = self.histogram_data[self.shown_hist-1]
+		
 		plt.clf()
-		ax = fig.add_subplot(111)
-		plt.bar(self.histograms[1][:-1], log_hist, width=1)
-		plt.xlim(min(self.histograms[1], max(self.histograms[1])))
+		ax = self.fig.add_subplot(111)
+		plt.hist(image_to_hist.flat, bins="auto", log=True, histtype="step")
 		plt.xlabel("Pixel Value")
 		plt.ylabel("Log Frequency")
 		plt.title("Histogram "+str(self.shown_hist))
-		fig.canvas.draw()
+		self.fig.canvas.draw()
+		
+		return(0)
 		
 	def add_hist_thresh(self, widget):
 		hist_thresh = widget.get_text()
@@ -1077,7 +1084,7 @@ class Asterism(Gtk.Window):
 		if self.thresholds == []:
 			self.thresholds = [None]*int(self.hist_to_gen)
 			
-		if self.thresholds[self.shown_hist] != None:
+		if self.thresholds[self.shown_hist-1] != None:
 			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Value already set")
 			dialog.format_secondary_text("Overwrite?")
 			response = dialog.run()
@@ -1086,15 +1093,18 @@ class Asterism(Gtk.Window):
 			if response == Gtk.ResponseType.CANCEL:
 				return(1)
 				
-		self.thresholds[self.shown_hist] = hist_thresh
+		self.thresholds[self.shown_hist-1] = hist_thresh
 		
 		return(0)
 		
 	def gen_prev_hist(self, widget):
-		if self.shown_hist == 1:
+		if self.shown_hist == 0:
+			self.shown_hit = 0
+		elif self.shown_hist == 1:
 			self.shown_hist = 1
 		else:
 			self.shown_hist -= 1
+			self.create_plot()
 		return(0)
 		
 	def gen_next_hist(self, widget):
@@ -1102,6 +1112,7 @@ class Asterism(Gtk.Window):
 			self.shown_hist = int(self.hist_to_gen)
 		else:
 			self.shown_hist += 1
+			self.create_plot()
 		return(0)
 		
 	def man_hot_pixel(self, widget, data_list_entry):
@@ -1120,8 +1131,11 @@ class Asterism(Gtk.Window):
 			return(2)
 			
 		else: 
-			for file in os.listdir(data_list_entry.data_filedata):
-				hp.Man_Hot_Pix_Correction(file, self.thresholds)
+			if data_list_entry.data_mode == "group":
+				for file in os.listdir(data_list_entry.data_filedata):
+					hp.Man_Hot_Pix_Correction(file, self.thresholds)
+			else:
+				hp.Man_Hot_Pix_Correction(data_list_entry.data_filedata, self.thresholds)
 			return(0)
 			
 win = Asterism()

@@ -1,1 +1,0 @@
-Output of sobel_selection('FOLDER', 50, 'retain')

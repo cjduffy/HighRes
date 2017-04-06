@@ -523,7 +523,7 @@ class Asterism(Gtk.Window):
 		
 		label_box = Gtk.Box()
 		row.add(label_box)
-		label = Gtk.Label("Manual Master Selection")
+		label = Gtk.Label("Manual Selection")
 		label_box.pack_start(label, True, True, 0)
 		
 		listbox.add(row)
@@ -534,11 +534,11 @@ class Asterism(Gtk.Window):
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
-		manual_dark_button = Gtk.Button("Master Dark Selection")
+		manual_dark_button = Gtk.Button("Dark Selection")
 		manual_dark_button.connect("clicked", self.manual_master_input, masters[0])
 		ver_box.pack_start(manual_dark_button, True, True, 0)
 		
-		manual_flat_button = Gtk.Button("Master Flat Selection")
+		manual_flat_button = Gtk.Button("Flat Selection")
 		manual_flat_button.connect("clicked", self.manual_master_input, masters[1])
 		ver_box.pack_start(manual_flat_button, True, True, 0)
 		
@@ -768,7 +768,7 @@ class Asterism(Gtk.Window):
 		
 		hor_box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
-		label = Gtk.Label("A:")
+		label = Gtk.Label("Cutoff Frequency:")
 		hor_box.pack_start(label, True, True, 0)
 		ver_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
@@ -787,7 +787,7 @@ class Asterism(Gtk.Window):
 		
 		hor_box = Gtk.Box(orientation = Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
-		label = Gtk.Label("B:")
+		label = Gtk.Label("Filter Sharpness:")
 		hor_box.pack_start(label, True, True, 0)
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
@@ -1267,15 +1267,15 @@ class Asterism(Gtk.Window):
 			return(1)
 			
 		elif self.a_value == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "A Value is Zero")
-			wrn_dialog.format_secondary_text("Please change the a value spinbutton")
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Cutoff Frequency is Zero")
+			wrn_dialog.format_secondary_text("Please change the cutoff frequency spinbutton")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
 			return(2)
 			
 		elif self.b_value == 0:
-			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "B Value is Zero")
-			wrn_dialog.format_secondary_text("Please change the b value spinbutton")
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Filter Sharpness is Zero")
+			wrn_dialog.format_secondary_text("Please change the filter sharpness spinbutton")
 			wrn_dialog.run()
 			wrn_dialog.destroy()
 			return(3)

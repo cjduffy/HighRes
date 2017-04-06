@@ -25,11 +25,10 @@ def fisher_selection(data_list_entry, percentage, state):
 			
 			x,y = image_data.shape
 			normalised_image = np.zeros((x,y))
-			
 			sum_pixels = np.sum(image_data)
 			
-			for n in range(1,x):
-				for m in range(1,y):
+			for n in range(0,x):
+				for m in range(0,y):
 					pixel = image_data[n,m]
 					normalised_image[n,m] = np.divide(pixel,sum_pixels)
 					

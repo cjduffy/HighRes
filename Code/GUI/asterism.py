@@ -14,6 +14,7 @@ import os
 import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 import hotpixel as hp
+from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration
 
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -728,6 +729,44 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(scrolled_window, "Hot Pixel Correction", "Hot Pixel Correction")
 		
+		##Registration and Filtering [RAF]
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Image Registration and Stacking")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		registration_button = Gtk.Button("Perform Registration and Stacking")
+		registration_button.connect("clicked", self.register, data_list[5])
+		ver_box.pack_start(registration_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Filtering")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBox()
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "Registrtion and Filtering", "Registration and Filtering")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -1136,6 +1175,25 @@ class Asterism(Gtk.Window):
 					hp.Man_Hot_Pix_Correction(file, self.thresholds)
 			else:
 				hp.Man_Hot_Pix_Correction(data_list_entry.data_filedata, self.thresholds)
+			return(0)
+			
+	def register(self, widget, data_list_entry):
+		if data_list_entry.data_filedata == "filename or folder name":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No FITS Data")
+			wrn_dialog.format_secondary_text("Please input FITS data in the raw data tab")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif data_list_entry.data_mode == "single":
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Single Image Detected")
+			wrn_dialog.format_secondary_text("Single Image detected, process unnnecessary")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
+		else:
+			Registration(data_list_entry.data_filedata)
 			return(0)
 			
 win = Asterism()

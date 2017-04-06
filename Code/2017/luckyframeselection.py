@@ -120,5 +120,7 @@ def sobel_selection(data_list_entry, percentage, state):
 			p += 1
 	return(0)
 
-sobel_selection('Images', 50, 'retain')
-#fisher_selection('Images', 10, 'retain')
+import timeit
+
+#print(timeit.timeit("sobel_selection('Images', 50, 'retain')", setup = "from __main__ import sobel_selection", number = 1))
+print(timeit.timeit("fisher_selection('Images', 50, 'retain')", setup = "from __main__ import fisher_selection", number = 1))

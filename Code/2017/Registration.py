@@ -293,7 +293,7 @@ def Registration(folder):
 			
 	hdu = fits.PrimaryHDU()
 	hdu.data = image_1
-	hdu.writeto('Stackec Image.fits', overwrite = False)
+	hdu.writeto('Stacked Image.fits', overwrite = False)
 	return image_1
 
 #Script to run for proof of testing	

@@ -58,7 +58,7 @@ def Auto_Hot_Pix_Correction(image_file, zero_number):
 	hdu.data = array
 	hdu.writeto(file, overwrite=True)
 	
-return(0)
+	return(0)
 			
 		
 			

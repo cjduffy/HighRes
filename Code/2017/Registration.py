@@ -286,7 +286,6 @@ def stack(image_1, image_2):
 	
 
 def Registration(folder):
-	n = 1
 	path_1 = folder+'/'+'frame_1_1.fits'
 	for file in os.listdir(folder):
 		if file.endswith('.fits'):
@@ -296,9 +295,7 @@ def Registration(folder):
 			image_1 = path_1
 			image_2 = path_2
 			image_1 = stack(image_1, image_2)
-		n += 1
-		if n == 10:
-			break
+
 	hdu = fits.PrimaryHDU()
 	hdu.data = image_1
 	hdu.writeto('Stacked Image.fits', overwrite = False)

@@ -3,8 +3,13 @@ def Man_Hot_Pix_Correction(image_file, thresholds):
 	from scipy.signal import convolve2d
 	from astropy.io import fits
 	
-	threshold = np.average(thresholds)
+	x = 0
+	threshold_total = 0
+	for x in range(0, len(thresholds)-1):
+		threshold_total += int(thresholds[x])
+		x += 1
 	
+	threshold = threshold_total/len(thresholds)
 	image = fits.open(image_file)
 	array = image[0].data
 	
@@ -28,14 +33,14 @@ def Auto_Hot_Pix_Correction(image_file, zero_number):
 	import os
 	
 	image = fits.open(image_file)
-	image_data = image[0].data
+	array = image[0].data
 	
-	histogram, bins = np.histogram(image_data, bins="auto")
+	histogram, bins = np.histogram(array, bins="auto")
 	x = 0
 	n = 0
 	
 	for x in range(0, len(histogram)):
-		if histgoram[x] != 0:
+		if histogram[x] != 0:
 			highest_count = x
 		x += 1
 	

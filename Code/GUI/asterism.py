@@ -78,7 +78,7 @@ class Asterism(Gtk.Window):
 		self.methodology = "Sobel"
 		self.percentage = 0
 		self.deleteluck = "delete"
-		self.zero_threshold = 1
+		self.zero_threshold = 0
 		self.hist_to_gen = 0
 		self.shown_hist = 0
 		self.histogram_data = []
@@ -606,7 +606,7 @@ class Asterism(Gtk.Window):
 		
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		row.add(hor_box)
-		label = Gtk.Label("Number of Zeros Before Threshold:")
+		label = Gtk.Label("Number of Bands to Strip:")
 		hor_box.pack_start(label, True, True, 0) 
 		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
@@ -685,7 +685,7 @@ class Asterism(Gtk.Window):
 		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
 		ver_box.pack_start(hor_box, True, True, 0)
 		
-		label = Gtk.Label("Enter Threshold Value\n(Press Enter to Confirm")
+		label = Gtk.Label("Enter Threshold Value\n(Press Enter to Confirm)")
 		hor_box.pack_start(label, True, True, 0)
 		
 		hist_entry = Gtk.Entry()
@@ -1082,11 +1082,19 @@ class Asterism(Gtk.Window):
 			wrn_dialog.destroy()
 			return(1)
 			
+		elif self.zero_threshold == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Bands to Strip")
+			wrn_dialog.format_secondary_text("Please select a number of bands to strip below")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+			
 		else:
 			if data_list_entry.data_mode == "group":
 				for file in os.listdir(data_list_entry.data_filedata):
-					full_filename = data_list_entry.data_filedata+"/"+file
-					hp.Auto_Hot_Pix_Correction(full_filename, self.zero_threshold)
+					if file.endswith(".fits"):
+						full_filename = data_list_entry.data_filedata+"/"+file
+						hp.Auto_Hot_Pix_Correction(full_filename, self.zero_threshold)
 			else:
 				hp.Auto_Hot_Pix_Correction(data_list_entry.data_filedata, self.zero_threshold)
 		return(0)
@@ -1162,8 +1170,6 @@ class Asterism(Gtk.Window):
 		plt.clf()
 		ax = self.fig.add_subplot(111)
 		plt.hist(image_to_hist.flat, bins="auto", log=True, histtype="step")
-		plt.xlabel("Pixel Value")
-		plt.ylabel("Log Frequency")
 		plt.title("Histogram "+str(self.shown_hist))
 		self.fig.canvas.draw()
 		
@@ -1171,6 +1177,11 @@ class Asterism(Gtk.Window):
 		
 	def add_hist_thresh(self, widget):
 		hist_thresh = widget.get_text()
+		
+		try:
+			threshold_number = int(hist_thresh)
+		except:
+			return(0)
 		
 		if self.thresholds == []:
 			self.thresholds = [None]*int(self.hist_to_gen)
@@ -1221,10 +1232,21 @@ class Asterism(Gtk.Window):
 			wrn_dialog.destroy()
 			return(2)
 			
+		x = 0
+		for x in range(0, len(self.thresholds)):
+			if self.thresholds[x] == None or self.thresholds[x] == 0:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Threshold Missing")
+				wrn_dialog.format_secondary_text("The threshold value for histogram "+str(x+1)+" is missing")
+				wrn_dialog.run()
+				wrn_dialog.destroy() 
+				return(3)
+			
 		else: 
 			if data_list_entry.data_mode == "group":
 				for file in os.listdir(data_list_entry.data_filedata):
-					hp.Man_Hot_Pix_Correction(file, self.thresholds)
+					if file.endswith(".fits"):
+						full_file = data_list_entry.data_filedata+"/"+file
+						hp.Man_Hot_Pix_Correction(full_file, self.thresholds)
 			else:
 				hp.Man_Hot_Pix_Correction(data_list_entry.data_filedata, self.thresholds)
 			return(0)

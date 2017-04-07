@@ -307,12 +307,12 @@ def Registration(folder):
 	while True:
 		if os.path.isfile(folder+"/"+filename):
 			n += 1
-			filename = "Stacked_Image_"+str(n)+".fits"
+			filename = "/Stacked_Image_"+str(n)+".fits"
 		else:
 			break
 			
 	hdu = fits.PrimaryHDU()
 	hdu.data = stacked_image
-	hdu.writeto(filename, overwrite = False)
+	hdu.writeto(folder+"/"+filename, overwrite = False)
 	
 	return(0)

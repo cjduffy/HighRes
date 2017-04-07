@@ -159,6 +159,11 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 	import numpy as np
 	
 	bigshape = np.round(np.array(image.shape) * 1.2).astype(int)
+	
+		if bigshape.size == 3:
+		if bigshape[2] == 4:
+			bigshape[2] = 3
+			
 	bg = np.zeros(bigshape, image.dtype)
 	
 	dest0 = embed_to(bg, image.copy())
@@ -228,6 +233,11 @@ def translation(image_1, image_2):
 
 def similarity(image_1, image_2):
 	
+	if image_1.ndim == 3:
+		image_1 = image_1[:,:,0]
+	if image_2.ndim == 3:
+		image_2 = image_2[:,:,0]
+	
 	if image_1.shape != image_2.shape:
 		image_1, image_2 = shaping(image_1, image_2)
 		
@@ -269,11 +279,6 @@ def stack(image_1, image_2):
 
 	image2 = fits.open(image_2)
 	data2 = image2[0].data
-
-	if data1.ndim == 3:
-		data1 = data1[:,:,0]
-	if data2.ndim == 3:
-		data2 = data2[:,:,0]
 	
 	dictionary = similarity(data1, data2)
 	

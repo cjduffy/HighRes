@@ -70,10 +70,10 @@ def Logpolar(image, angles=None, radii=None):
 def imshow(im, cmap=None, **kwargs):
 	"""Plot images using matplotlib."""
 	from matplotlib import pyplot
-	if cmap is None:
-		cmap = 'gray'
+	#if cmap is None:
+	#	cmap = 'gray'
 	pyplot.plot
-	pyplot.imshow(im2, cmap, **kwargs)
+	pyplot.imshow(im, cmap, **kwargs)
 	pyplot.show()
 
 def correlation(image_1, image_2):
@@ -154,16 +154,21 @@ def embed_to(where, what):
 	Returns:
 		The destination array
 	"""
-	slices_from, slices_to = _get_emslices(where.shape, what.shape)
 
+	slices_from, slices_to = _get_emslices(where.shape, what.shape)
+	
 	where[slices_to[0], slices_to[1]] = what[slices_from[0], slices_from[1]]
 	return where
 
 def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0)):
-	
+
 	bigshape = np.round(np.array(image.shape) * 1.2).astype(int)
-	bg = np.zeros(bigshape, image.dtype)
 	
+	if bigshape.size == 3:
+		if bigshape[2] == 4:
+			bigshape[2] = 3
+			
+	bg = np.zeros(bigshape, image.dtype)
 	dest0 = embed_to(bg, image.copy())
 	
 	if scale != 1.0:
@@ -226,6 +231,11 @@ def translation(image_1, image_2):
 
 def similarity(image_1, image_2):
 	
+	if image_1.ndim == 3:
+		image_1 = image_1[:,:,0]
+	if image_2.ndim == 3:
+		image_2 = image_2[:,:,0]
+	
 	if image_1.shape != image_2.shape:
 		image_1, image_2 = shaping(image_1, image_2)
 		
@@ -266,13 +276,8 @@ def stack(image_1, image_2):
 	image2 = fits.open(image_2)
 	data2 = image2[0].data
 
-	if data1.ndim == 3:
-		data1 = data1[:,:,0]
-	if data2.ndim == 3:
-		data2 = data2[:,:,0]
-	
 	dictionary = similarity(data1, data2)
-	
+
 	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
 	
 	image_3 = abs(data1/2 + data3/2)
@@ -281,6 +286,7 @@ def stack(image_1, image_2):
 	
 
 def Registration(folder):
+	n = 1
 	path_1 = folder+'/'+'frame_1_1.fits'
 	for file in os.listdir(folder):
 		if file.endswith('.fits'):
@@ -290,13 +296,15 @@ def Registration(folder):
 			image_1 = path_1
 			image_2 = path_2
 			image_1 = stack(image_1, image_2)
-			
+		n += 1
+		if n == 10:
+			break
 	hdu = fits.PrimaryHDU()
 	hdu.data = image_1
 	hdu.writeto('Stacked Image.fits', overwrite = False)
 	return image_1
 
 #Script to run for proof of testing	
-image_3 = Registration('1000 - BLUE')
+image_3 = Registration('moon crater')
 #line only produces image output for testing
 imshow(image_3)

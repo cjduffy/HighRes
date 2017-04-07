@@ -16,6 +16,8 @@ from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as Figur
 import hotpixel as hp
 from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration
 import filtering
+import string
+from matplotlib.colors import LinearSegmentedColormap
 
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
@@ -86,6 +88,9 @@ class Asterism(Gtk.Window):
 		self.thresholds = []
 		self.a_value = 0
 		self.b_value = 0
+		self.false_colour_images = []
+		self.present_image = 0
+		self.colours = []
 		
 		dark = data_structure("dark")
 		flat = data_structure("flat")
@@ -819,6 +824,87 @@ class Asterism(Gtk.Window):
 		
 		stack.add_titled(listbox, "Registrtion and Filtering", "Registration and Filtering")
 		
+		##False Colouring and Layering [FCL]
+		
+		listbox = Gtk.ListBox()
+		listbox.set_selection_mode(Gtk.SelectionMode.NONE)
+		row = Gtk.ListBoxRow()
+		
+		head_box = Gtk.Box()
+		row.add(head_box)
+		head_label = Gtk.Label("Image Input")
+		head_box.pack_start(head_label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		image_button = Gtk.Button("Select Individual Images to be False Coloured")
+		image_button.connect("clicked", self.false_colour_input)
+		ver_box.pack_start(image_button, True, True, 0)
+		
+		image_button_2 = Gtk.Button("Select Folder Containing Images to be False Coloured")
+		image_button_2.connect("clicked", self.false_colour_input_folder)
+		ver_box.pack_start(image_button_2, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Select Colours for Each Image")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		label = Gtk.Label("Input hex code of colour for image "+":\n (Press Enter to Confirm)")
+		hor_box.pack_start(label, True, True, 0)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		colour_entry = Gtk.Entry()
+		colour_entry.connect("activate", self.add_colour)
+		ver_box.pack_start(colour_entry, True, True, 0) 
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		apply_colourspace_button = Gtk.Button("False Colour Image")
+		apply_colourspace_button.connect("clicked", self.apply_colourspace)
+		ver_box.pack_start(apply_colourspace_button, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		row.add(ver_box)
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		ver_box.pack_start(hor_box, True, True, 0)
+		
+		increment_button = Gtk.Button("Next Image")
+		increment_button.connect("clicked", self.change_present_image, 1)
+		hor_box.pack_end(increment_button, True, True, 0)
+		
+		decrement_button = Gtk.Button("Previous Image")
+		decrement_button.connect("clicked", self.change_present_image, -1)
+		hor_box.pack_start(decrement_button, True, True, 0)
+		
+		listbox.add(row)
+		
+		stack.add_titled(listbox, "False Colour and Layering", "False Colour and Layering")
+		
 		stack_sidebar = Gtk.StackSidebar()
 		stack_sidebar.set_stack(stack)
 		outer_box.pack_start(stack_sidebar, True, True, 0)
@@ -1310,9 +1396,148 @@ class Asterism(Gtk.Window):
 			for file in os.listdir(data_list_entry.data_filedata):
 				if file.endswith(".fits"):
 					if file.startswith("Stacked"):
-						filtering.filtering(data_list_entry.data_filedata+"/"+file)
+						filtering.filtering(data_list_entry.data_filedata+"/"+file, self.a_value, self.b_value)
+		return(0)
+		
+	def false_colour_input(self, widget):
+		dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+		response = dialog.run()
+		if response == Gtk.ResponseType.OK:
+			false_colour_image = dialog.get_filename()
+			if false_colour_image.endswith(".fits"):
+				self.false_colour_images.append(false_colour_image)
+				self.colours.append(0)
+			dialog.destroy()
+		elif response == Gtk.ResponseType.CANCEL:
+			dialog.destroy()
+		else:
+			print("Response Type Error")
+			dialog.destroy()
+			return(1)
+			
+		test = True
+		
+		while test == True:
+			dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK_CANCEL, "Add another image to be false coloured?")
+			response = dialog.run()
+			dialog.destroy()
+			if response == Gtk.ResponseType.OK:
+				dialog = Gtk.FileChooserDialog("Select File", self, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+				response = dialog.run()
+				if response == Gtk.ResponseType.OK:
+					false_colour_image = dialog.get_filename()
+					if false_colour_image.endswith(".fits"):
+						self.false_colour_images.append(false_colour_image)
+						self.colours.append(0)
+					dialog.destroy()
+				elif response == Gtk.ResponseType.CANCEL:
+					dialog.destroy()
+					return(2)
+				else:
+					print("Response Type Error")
+					dialog.destroy()
+					return(1)
+			else:
+				test = False
+				
+		return(0)
+		
+	def false_colour_input_folder(self, widget):
+		dialog = Gtk.FileChooserDialog("Select Folder", self, Gtk.FileChooserAction.SELECT_FOLDER, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, "Select Folder", Gtk.ResponseType.OK))
+		response = dialog.run()
+		
+		if response == Gtk.ResponseType.OK:
+			folder = dialog.get_filename()
+			dialog.destroy()
+			for file in os.listdir(folder):
+				if file.endswith(".fits"):
+					self.false_colour_images.append(folder+"/"+file)
+					self.colours.append(0)
+		elif response == Gtk.ResponseType.CANCEL:
+			dialog.destroy()
+			return(1)
+		else:
+			dialog.destroy()
+			print("Response Type Error")
+			return(2)	
 		return(0)
 			
+	def add_colour(self, widget):
+		try:
+			if self.colours[self.present_image]:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK_CANCEL, "Value already set")
+				wrn_dialog.format_secondary_text("Overwrite?")
+				response = wrn_dialog.run()
+				wrn_dialog.destroy()
+				if response == Gtk.ResponseType.CANCEL:
+					return(3)
+		except:
+			pass
+				
+		real_colour = widget.get_text()
+		
+		if real_colour.startswith("#"):
+			colour = real_colour.replace("#", "")
+		else:
+			colour = real_colour
+			
+		if len(colour) == 6: 	
+			check_if_hex = all(letter in string.hexdigits for letter in colour)
+			if check_if_hex == True:
+				self.colours[self.present_image] = (colour)
+			else:
+				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Value not a hexidecimal number")
+				wrn_dialog.format_secondary_text("Entry format should be a six digit hexadecimal number which can be preceded by a #")
+				wrn_dialog.run()
+				wrn_dialog.destroy()
+				return(1)
+		else:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Value not correct length")
+			wrn_dialog.format_secondary_text("Entry format should be a six digit hexadecimal number which can be preceded by a #")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+		return(0)
+		
+	def change_present_image(self, widget, number):
+		self.present_image += number
+		
+		if self.present_image == 0:
+			self.present_image = 1
+		
+		print(self.present_image)
+		
+		return(0)
+		
+	def apply_colourspace(self, widget):
+		
+		gray_image = fits.open(self.false_colour_images[self.present_image])
+		gray_image_data = gray_image[0].data
+		colour_to_make_image = self.colours[self.present_image]
+		
+		r_string = colour_to_make_image[0]+colour_to_make_image[1]
+		g_string = colour_to_make_image[2]+colour_to_make_image[3]
+		b_string = colour_to_make_image[4]+colour_to_make_image[5]
+		
+		r_int = int(r_string, 16)
+		g_int = int(g_string, 16)
+		b_int = int(b_string, 16)
+		
+		r_int_normal = r_int/255
+		g_int_normal = g_int/255
+		b_int_normal = b_int/255
+		
+		colour_dictionary = {"red": ((0.0, 0.0, 0.0),(0.5, r_int_normal/2, r_int_normal/2),(1.0, r_int_normal, r_int_normal)), "green":((0.0, 0.0, 0.0),(0.5, g_int_normal/2, g_int_normal/2),(1.0, g_int_normal, g_int_normal)), "blue": ((0.0, 0.0, 0.0),(0.5, b_int_normal/2, b_int_normal/2),(1.0, b_int_normal, b_int_normal))}
+		
+		colour_space = LinearSegmentedColormap("Created Space", colour_dictionary)
+		
+		plt.register_cmap(cmap=colour_space)
+		
+		plt.imshow(gray_image_data, cmap="Created Space", origin="lower")
+		plt.show()
+		
+		return(0)
+	
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

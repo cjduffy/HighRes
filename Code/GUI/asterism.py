@@ -1532,9 +1532,14 @@ class Asterism(Gtk.Window):
 		colour_space = LinearSegmentedColormap("Created Space", colour_dictionary)
 		
 		plt.register_cmap(cmap=colour_space)
+		new_filename = self.false_colour_images[self.present_image].replace(".fits", "_false_coloured.tif")
+		plt.imsave(new_filename, gray_image_data, cmap="Created Space", format="tif")
 		
-		plt.imshow(gray_image_data, cmap="Created Space", origin="lower")
-		plt.show()
+		fits_filename = new_filename.replace(".tif", ".fits")
+		im = Image.open(new_filename)
+		hdu = fits.PrimaryHDU()
+		hdu.data = im
+		hdu.writeto(fits_filename, overwrite=True)
 		
 		return(0)
 	

@@ -1536,6 +1536,9 @@ class Asterism(Gtk.Window):
 		
 		colour_space = LinearSegmentedColormap("Created Space", colour_dictionary)
 		
+		if gray_image_data.ndim == 3:
+			gray_image_data = gray_image_data[:,:,0]
+		
 		plt.register_cmap(cmap=colour_space)
 		new_filename = self.false_colour_images[self.present_image].replace(".fits", "_false_coloured.tif")
 		plt.imsave(new_filename, gray_image_data, cmap="Created Space", format="tif")

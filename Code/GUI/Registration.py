@@ -159,11 +159,7 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 	import numpy as np
 	
 	bigshape = np.round(np.array(image.shape) * 1.2).astype(int)
-	
-	if bigshape.size == 3:
-		if bigshape[2] == 4:
-			bigshape[2] = 3
-			
+				
 	bg = np.zeros(bigshape, image.dtype)
 	
 	dest0 = embed_to(bg, image.copy())
@@ -232,12 +228,7 @@ def translation(image_1, image_2):
 	return translation_difference
 
 def similarity(image_1, image_2):
-	
-	if image_1.ndim == 3:
-		image_1 = image_1[:,:,0]
-	if image_2.ndim == 3:
-		image_2 = image_2[:,:,0]
-	
+		
 	if image_1.shape != image_2.shape:
 		image_1, image_2 = shaping(image_1, image_2)
 		
@@ -280,6 +271,11 @@ def stack(image_1, image_2):
 	image2 = fits.open(image_2)
 	data2 = image2[0].data
 	
+	if data1.ndim == 3:
+		data1 = data1[:,:,0]
+	if data2.ndim == 3:
+		data2 = data2[:,:,0]
+	
 	dictionary = similarity(data1, data2)
 	
 	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
@@ -288,6 +284,21 @@ def stack(image_1, image_2):
 	
 	return image_3
 	
+def for_colour_mapping(image_1, image_2):
+	
+	from astropy.io import fits
+	
+	image1 = fits.open(image_1)
+	data1 = image1[0].data
+
+	image2 = fits.open(image_2)
+	data2 = image2[0].data
+	
+	dictionary = similarity(data1, data2)
+	
+	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
+	
+	return data3
 
 def Registration(folder):
 	import os
@@ -323,6 +334,17 @@ def Registration(folder):
 	
 	return(0)
 	
+def colour_mapping(image_1, image_2, colour_map_image_1, colour_map_image_2):
+	 from PIL import Image
+	 
+	image_2 = for_colour_mapping(image_1, image_2)
+	 
+	image_2 = APPLY COLOUR MAP TO IMAGE_2
+	
+	blended = Image.blend(image_1, image_2, alpha = 0.5)
+	
+	return blended
+
 def Layering(list_of_images):
 	import os
 	from astropy.io import fits

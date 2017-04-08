@@ -160,7 +160,7 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 	
 	bigshape = np.round(np.array(image.shape) * 1.2).astype(int)
 	
-		if bigshape.size == 3:
+	if bigshape.size == 3:
 		if bigshape[2] == 4:
 			bigshape[2] = 3
 			

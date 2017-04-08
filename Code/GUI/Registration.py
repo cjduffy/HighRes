@@ -294,6 +294,7 @@ def Registration(folder):
 	from astropy.io import fits	
 	
 	filelist = []
+	stacked_image = np.array((1,1))
 	
 	for file in os.listdir(folder):
 		if file.endswith(".fits"):
@@ -304,7 +305,7 @@ def Registration(folder):
 		if folder+"/"+file == filelist[0]:
 			pass
 		else:
-			stacked_image = stack(filelist[0], folder+"/"+file)
+			stacked_image += stack(filelist[0], folder+"/"+file)
 	
 	n = 1
 	filename = "Stacked_Image_"+str(n)+".fits"
@@ -321,3 +322,31 @@ def Registration(folder):
 	hdu.writeto(folder+"/"+filename, overwrite = False)
 	
 	return(0)
+	
+def Layering(list_of_images):
+	import os
+	from astropy.io import fits
+	
+	filelist = list_of images
+	x = 0
+	stacked_image = np.array((1,1))
+	
+	for x in range(0, len(filelist)):
+		if x == 0:
+			pass
+		else:
+			stacked_image += stack(filelist[0], filelist[x])
+			
+	n = 1
+	filename = "Stacked_Image_"+str(n)+".fits"
+	
+	while True:
+		if os.path.isfile(folder+"/"+filename):
+			n += 1
+			filename = "/Stacked_Image_"+str(n)+".fits"
+		else:
+			break
+			
+	hdu = fits.PrimaryHDU()
+	hdu.data = stacked_image
+	hdu.writeto(folder+"/"+filename, overwrite = False)

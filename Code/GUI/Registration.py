@@ -294,6 +294,11 @@ def for_colour_mapping(image_1, image_2):
 	image2 = fits.open(image_2)
 	data2 = image2[0].data
 	
+	if data1.ndim == 3:
+		data1 = data1[:,:,0]
+	if data2.ndim == 3:
+		data2 = data2[:,:,0]
+	
 	dictionary = similarity(data1, data2)
 	
 	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])

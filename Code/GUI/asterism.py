@@ -902,6 +902,26 @@ class Asterism(Gtk.Window):
 		hor_box.pack_start(decrement_button, True, True, 0)
 		
 		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		label_box = Gtk.Box()
+		row.add(label_box)
+		label = Gtk.Label("Layering of False Colour Images")
+		label_box.pack_start(label, True, True, 0)
+		
+		listbox.add(row)
+		row = Gtk.ListBoxRow()
+		
+		hor_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=50)
+		row.add(hor_box)
+		ver_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=3)
+		hor_box.pack_start(ver_box, True, True, 0)
+		
+		image_layering_button = Gtk.Button("Layer Images")
+		image_layering_button.connect("clicked", self.layer_false_colour)
+		ver_box.pack_start(image_layering_button, True, True, 0)
+		
+		listbox.add(row)
 		
 		stack.add_titled(listbox, "False Colour and Layering", "False Colour and Layering")
 		
@@ -1534,14 +1554,14 @@ class Asterism(Gtk.Window):
 		
 		colour_dictionary = {"red": ((0.0, 0.0, 0.0),(0.5, r_int_normal/2, r_int_normal/2),(1.0, r_int_normal, r_int_normal)), "green":((0.0, 0.0, 0.0),(0.5, g_int_normal/2, g_int_normal/2),(1.0, g_int_normal, g_int_normal)), "blue": ((0.0, 0.0, 0.0),(0.5, b_int_normal/2, b_int_normal/2),(1.0, b_int_normal, b_int_normal))}
 		
-		colour_space = LinearSegmentedColormap("Created Space", colour_dictionary)
+		colour_space = LinearSegmentedColormap("Created Space "+str(self.present_image), colour_dictionary)
 		
 		if gray_image_data.ndim == 3:
 			gray_image_data = gray_image_data[:,:,0]
 		
 		plt.register_cmap(cmap=colour_space)
 		new_filename = self.false_colour_images[self.present_image].replace(".fits", "_false_coloured.tif")
-		plt.imsave(new_filename, gray_image_data, cmap="Created Space", format="tif")
+		plt.imsave(new_filename, gray_image_data, cmap="Created Space "+str(self.present_image), format="tif")
 		
 		fits_filename = new_filename.replace(".tif", ".fits")
 		im = Image.open(new_filename)
@@ -1550,6 +1570,24 @@ class Asterism(Gtk.Window):
 		hdu.writeto(fits_filename, overwrite=True)
 		
 		return(0)
+		
+	def layer_false_colour(self, widget):
+		if len(self.false_colour_images) == 0:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Images to Layer")
+			wrn_dialog.format_secondary_text("Please create false colour images above")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(1)
+			
+		elif len(self.false_colour_images) == 1:
+			wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Single Image Detected")
+			wrn_dialog.format_secondary_text("Single image, process unnecessary")
+			wrn_dialog.run()
+			wrn_dialog.destroy()
+			return(2)
+		
+		else:
+			Layering(self.false_colour_images)
 	
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)

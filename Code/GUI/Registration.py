@@ -339,14 +339,20 @@ def Registration(folder):
 	
 	return(0)
 	
-def colour_mapping(image_1, image_2, colour_map_image_1, colour_map_image_2):
-	 from PIL import Image
+def colour_mapping(image_1, image_2, number):
+	from PIL import Image
+	import matplotlib
+	import matplotlib.pyplot as plt
+	import os
 	 
 	image_2 = for_colour_mapping(image_1, image_2)
 	 
-	image_2 = APPLY COLOUR MAP TO IMAGE_2
+	image_2_image = Image.fromarray(image_2)
+	plt.imsave("temp.tif", image_2_image, cmap="Created Space "+str(number), format="tif")
+	image_2_new = Image.open("temp.tif")
 	
 	blended = Image.blend(image_1, image_2, alpha = 0.5)
+	os.remove("temp.tif")
 	
 	return blended
 
@@ -362,7 +368,7 @@ def Layering(list_of_images):
 		if x == 0:
 			pass
 		else:
-			stacked_image += stack(filelist[0], filelist[x])
+			stacked_image += colour_mapping(filelist[0], filelist[x], x)
 			
 	n = 1
 	filename = "Stacked_Image_"+str(n)+".fits"

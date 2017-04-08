@@ -1218,10 +1218,13 @@ class Asterism(Gtk.Window):
 			filelist = []
 			thresholds = [None]*int_hist
 			
-			for file in os.listdir(data_list_entry.data_filedata):
-				if file.endswith(".fits"):
-					counter += 1
-					filelist.append(file)
+			if data_list_entry.data_mode == "group":
+				for file in os.listdir(data_list_entry.data_filedata):
+					if file.endswith(".fits"):
+						counter += 1
+						filelist.append(file)
+			else:
+				counter = 1
 					
 			if self.hist_to_gen > counter:
 				wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "Too Many Histograms")
@@ -1231,8 +1234,11 @@ class Asterism(Gtk.Window):
 				return(3)
 					
 			for counter_2 in range(0,int_hist):
-				random_number = random.randrange(1, counter, 1)
-				im_to_hist = data_list_entry.data_filedata+"/"+filelist[random_number]
+				if data_list_entry.data_mode == "group":
+					random_number = random.randrange(1, counter, 1)
+					im_to_hist = data_list_entry.data_filedata+"/"+filelist[random_number]
+				else:
+					im_to_hist = data_list_entry.data_filedata
 				im = fits.open(im_to_hist)
 				im_data = im[0].data
 				self.histogram_data.append(im_data)
@@ -1250,7 +1256,6 @@ class Asterism(Gtk.Window):
 		n = 0
 		m = 0
 		log_hist = []
-		
 		image_to_hist = self.histogram_data[self.shown_hist-1]
 		
 		plt.clf()

@@ -327,7 +327,7 @@ def Layering(list_of_images):
 	import os
 	from astropy.io import fits
 	
-	filelist = list_of images
+	filelist = list_of_images
 	x = 0
 	stacked_image = np.array((1,1))
 	

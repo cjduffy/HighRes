@@ -213,10 +213,10 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		dialog = Gtk.MessageDialog(Asterism, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
-		dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
-		dialog.run()
-		dialog.destroy()
+		#dialog = Gtk.MessageDialog(Asterism, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
+		#dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
+		#dialog.run()
+		#dialog.destroy()
 		res = 0
 	
 	return res

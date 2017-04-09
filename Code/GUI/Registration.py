@@ -213,10 +213,10 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		dialog = Gtk.MessageDialog(Asterism, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
-		dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
-		dialog.run()
-		dialog.destroy()
+		#dialog = Gtk.MessageDialog(Asterism, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
+		#dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
+		#dialog.run()
+		#dialog.destroy()
 		res = 0
 	
 	return res
@@ -307,10 +307,11 @@ def for_colour_mapping(image_1, image_2):
 
 def Registration(folder):
 	import os
-	from astropy.io import fits	
+	from astropy.io import fits
+	import numpy as np
 	
 	filelist = []
-	stacked_image = np.array((1,1))
+	#stacked_image = np.array((1,1), dtype = float)
 	
 	for file in os.listdir(folder):
 		if file.endswith(".fits"):
@@ -319,6 +320,11 @@ def Registration(folder):
 			
 	for file in os.listdir(folder):
 		if folder+"/"+file == filelist[0]:
+			stacked_image = fits.open(filelist[0])
+			stacked_image = stacked_image[0].data
+			if stacked_image.ndim == 3:
+				stacked_image = stacked_image[:,:,0]
+			stacked_image = np.zeros_like(stacked_image, dtype = float)
 			pass
 		else:
 			stacked_image += stack(filelist[0], folder+"/"+file)

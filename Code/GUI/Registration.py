@@ -102,7 +102,7 @@ def ang_scale(image_1, image_2):
 	
 	ang, scaling_factor = correlation(LP_image_1, LP_image_2)
 	
-	angle = -np.pi * ang ##This will need reviewed
+	angle = -np.pi * ang
 	angle = np.rad2deg(angle)
 	scale = logbase ** scaling_factor
 	angle = -1 *angle
@@ -178,9 +178,6 @@ def transform_image(image, scale = 1.0, angle = 0.0, translation_vector = (0,0))
 def check_rotation(image_1, image_2, image_3):
 	from scipy.fftpack import fft2, ifft2, fftshift
 	import numpy as np
-	import gi
-	gi.require_version('Gtk', '3.0')
-	from gi.repository import Gtk
 	
 	shape = image_1.shape
 	
@@ -213,10 +210,7 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		#dialog = Gtk.MessageDialog(Asterism, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, "Rotational Equality Detected")
-		#dialog.format_secondary_text("Image appears to be identical under all rotations after scaling, process will proceed upon pressing the OK button. Be warned that the results may be imperfect.")
-		#dialog.run()
-		#dialog.destroy()
+		print("Image appears to be identical under all rotations after scaling. Be aware that the results underr rotation may be imperfect.")
 		res = 0
 	
 	return res
@@ -311,7 +305,6 @@ def Registration(folder):
 	import numpy as np
 	
 	filelist = []
-	#stacked_image = np.array((1,1), dtype = float)
 	
 	for file in os.listdir(folder):
 		if file.endswith(".fits"):

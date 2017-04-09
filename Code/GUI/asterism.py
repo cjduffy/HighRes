@@ -14,7 +14,7 @@ import os
 import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 import hotpixel as hp
-from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration
+from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration, Layering
 import filtering
 import string
 from matplotlib.colors import LinearSegmentedColormap
@@ -1128,6 +1128,7 @@ class Asterism(Gtk.Window):
 					masters[0].set_master_filename(data_list[0].data_filedata)
 					master = fits.open(data_list[0].data_filedata)
 					masters[0].set_master_data(master[0].data)
+					masters[0].set_master_exposure_time(data_list[5].exposure_time)
 				else:
 					wrn_dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.WARNING, Gtk.ButtonsType.OK, "No Master Dark")
 					wrn_dialog.format_secondary_text("Please create a master dark image in the dark current tab, or manually select one above")
@@ -1416,7 +1417,7 @@ class Asterism(Gtk.Window):
 			return(3)
 			
 		if data_list_entry.data_mode == "single":
-			filtering.filtering(data_list_entry.data_filedata)
+			filtering.filtering(data_list_entry.data_filedata, sekf.a_value, self.b_value)
 		else:
 			for file in os.listdir(data_list_entry.data_filedata):
 				if file.endswith(".fits"):

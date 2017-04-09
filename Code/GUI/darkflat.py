@@ -4,11 +4,11 @@ def darkflat_correction(masters, data_list_entry):
 	from astropy.io import fits
 	import numpy as np
 	
-	if masters[0].data.shape == 0:
+	if masters[0].master_data.shape == 0:
 		master_image = fits.open(masters[0].master_filename)
 		masters[0].set_master_data(master_image)
 		
-	if masters[1].data.shape == 0:
+	if masters[1].master_data.shape == 0:
 		master_image_2 = fits.open(masters[1].master_filename)
 		masters[1].set_master_data(master_image_2)
 	

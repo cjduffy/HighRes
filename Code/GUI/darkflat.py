@@ -43,7 +43,7 @@ def darkflat_correction(masters, data_list_entry):
 			raw_image_data = raw_image[0].data
 			
 			scaling_factor = np.divide(data_list_entry.exposure_time, masters[0].exposure_time)
-			scaled_dark_current = np.multiply(scaling_fator, masters[0].data)
+			scaled_dark_current = np.multiply(scaling_factor, masters[0].data)
 			
 			dark_sub = np.subtract(raw_image_data, scaled_dark_current)
 			cor_image = np.divide(dark_sub, masters[1].data)

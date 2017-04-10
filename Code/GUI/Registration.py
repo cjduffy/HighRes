@@ -256,7 +256,7 @@ def similarity(image_1, image_2):
 	return dictionary
 	
 def stack(image_1, image_2):
-	
+	import numpy as np
 	from astropy.io import fits
 	
 	image1 = fits.open(image_1)
@@ -282,7 +282,7 @@ def stack(image_1, image_2):
 	return image_3
 	
 def for_colour_mapping(image_1, image_2):
-	
+	import numpy as np
 	from astropy.io import fits
 	
 	image1 = fits.open(image_1)

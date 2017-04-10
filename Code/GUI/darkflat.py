@@ -15,6 +15,8 @@ def darkflat_correction(masters, data_list_entry):
 	if data_list_entry.data_mode == "single":
 		raw_image = fits.open(data_list_entry.data_filedata)
 		raw_image_data = raw_image[0].data
+		if raw_image_data.ndim == 3:
+				raw_image_data = raw_image_data[:,:,0]
 		
 		scaling_factor = np.divide(data_list_entry.exposure_time, masters[0].exposure_time)
 		scaled_dark_current = np.multiply(scaling_factor, masters[0].master_data)
@@ -41,6 +43,8 @@ def darkflat_correction(masters, data_list_entry):
 			
 			raw_image = fits.open(filepath)
 			raw_image_data = raw_image[0].data
+			if raw_image_data.ndim == 3:
+				raw_image_data = raw_image_data[:,:,0]
 			
 			scaling_factor = np.divide(data_list_entry.exposure_time, masters[0].exposure_time)
 			scaled_dark_current = np.multiply(scaling_factor, masters[0].master_data)

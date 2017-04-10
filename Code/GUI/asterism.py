@@ -778,7 +778,7 @@ class Asterism(Gtk.Window):
 		ver_box = Gtk.Box(orientation = Gtk.Orientation.VERTICAL, spacing=3)
 		hor_box.pack_start(ver_box, True, True, 0)
 		
-		adjustment_a = Gtk.Adjustment(0, 0, 50, 0.1, 0)
+		adjustment_a = Gtk.Adjustment(0, 0, 1000, 0.1, 0)
 		self.a_spinbutton = Gtk.SpinButton()
 		self.a_spinbutton.set_numeric(True)
 		self.a_spinbutton.set_digits(1)

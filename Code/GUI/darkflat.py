@@ -31,7 +31,7 @@ def darkflat_correction(masters, data_list_entry):
 		data_list_entry.set_data_filedata(new_filename)
 		
 	elif data_list_entry.data_mode == "group":
-		if os.isdir(data_list_entry.data_filedata+"/lucky_frames") == True:
+		if os.path.isdir(data_list_entry.data_filedata+"/lucky_frames") == True:
 			folder = data_list_entry.data_filedata+"/lucky_frames"
 		else:
 			folder = data_list_entry.data_filedata

@@ -9,6 +9,7 @@ def filtering(fits_image, a, b):
 	image = open_image[0].data
 	if image.ndim == 3:
 		image = image[:,:,0] 
+	image = np.nan_to_num(image)
 	
 	x, y = image.shape
 	high_pass = Filter(image, x, y, a, b)

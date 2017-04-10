@@ -269,6 +269,9 @@ def stack(image_1, image_2):
 		data1 = data1[:,:,0]
 	if data2.ndim == 3:
 		data2 = data2[:,:,0]
+		
+	data1 = np.nan_to_num(data1)
+	data2 = np.nan_to_num(data2)
 	
 	dictionary = similarity(data1, data2)
 	
@@ -292,6 +295,9 @@ def for_colour_mapping(image_1, image_2):
 		data1 = data1[:,:,0]
 	if data2.ndim == 3:
 		data2 = data2[:,:,0]
+		
+	data1 = np.nan_to_num(data1)
+	data2 = np.nan_to_num(data2)
 	
 	dictionary = similarity(data1, data2)
 	

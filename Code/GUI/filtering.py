@@ -35,6 +35,8 @@ def filtering(fits_image, a, b):
 	return(0)
 
 def Filter(image, x, y, a, b):
+	import numpy as np
+	import math
 	high_pass = np.zeros_like(image)
 	for m in range(1, y):
 		for n in range(1, x):

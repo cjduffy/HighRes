@@ -1417,7 +1417,7 @@ class Asterism(Gtk.Window):
 			return(3)
 			
 		if data_list_entry.data_mode == "single":
-			filtering.filtering(data_list_entry.data_filedata, sekf.a_value, self.b_value)
+			filtering.filtering(data_list_entry.data_filedata, self.a_value, self.b_value)
 		else:
 			for file in os.listdir(data_list_entry.data_filedata):
 				if file.endswith(".fits"):

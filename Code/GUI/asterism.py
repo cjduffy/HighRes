@@ -1570,6 +1570,9 @@ class Asterism(Gtk.Window):
 		hdu.data = im
 		hdu.writeto(fits_filename, overwrite=True)
 		
+		self.false_colour_images[self.present_image] = self.false_colour_images[self.present_image].replace(".fits", "_false_coloured.fits")
+		print(self.false_colour_images[self.present_image])
+		
 		return(0)
 		
 	def layer_false_colour(self, widget):
@@ -1588,8 +1591,18 @@ class Asterism(Gtk.Window):
 			return(2)
 		
 		else:
-			Layering(self.false_colour_images)
-	
+			x = 1
+			
+			image_0_file = fits.open(self.false_colour_images[0])
+			image_0_data = image_0_file[0].data
+			image_0 = Image.fromarray(image_0_data)
+			for x in range(1,len(self.false_colour_images)):
+				image_1_file = fits.open(self.false_colour_images[x])
+				image_1_data = image_1_file[0].data
+				image_1 = Image.fromarray(image_1_data)
+				image_0_data = Image.blend(image_0, image_1, 0.5)
+			image_0_data.save(os.path.dirname(self.false_colour_images[0])+"/layered.tif")
+				
 win = Asterism()
 win.connect("delete-event", Gtk.main_quit)
 win.show_all()

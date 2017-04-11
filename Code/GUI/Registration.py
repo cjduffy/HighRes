@@ -210,7 +210,7 @@ def check_rotation(image_1, image_2, image_3):
 	elif np.amax(r1) > np.amax(r0):
 		res = 1
 	else:
-		print("Image appears to be identical under all rotations after scaling. Be aware that the results underr rotation may be imperfect.")
+		print("Image appears to be identical under all rotations after scaling. Be aware that the results under rotation may be imperfect.")
 		res = 0
 	
 	return res

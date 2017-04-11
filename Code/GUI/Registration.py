@@ -272,6 +272,8 @@ def stack(image_1, image_2):
 		
 	data1 = np.nan_to_num(data1)
 	data2 = np.nan_to_num(data2)
+	data1 = data1.astype('float64')
+	data2 = data2.astype('float64')
 	
 	dictionary = similarity(data1, data2)
 	
@@ -298,6 +300,8 @@ def for_colour_mapping(image_1, image_2):
 		
 	data1 = np.nan_to_num(data1)
 	data2 = np.nan_to_num(data2)
+	data1 = data1.astype('float64')
+	data2 = data2.astype('float64')
 	
 	dictionary = similarity(data1, data2)
 	

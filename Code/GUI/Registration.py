@@ -283,31 +283,7 @@ def stack(image_1, image_2):
 	
 	return image_3
 	
-def for_colour_mapping(image_1, image_2):
-	import numpy as np
-	from astropy.io import fits
-	
-	image1 = fits.open(image_1)
-	data1 = image1[0].data
 
-	image2 = fits.open(image_2)
-	data2 = image2[0].data
-	
-	if data1.ndim == 3:
-		data1 = data1[:,:,0]
-	if data2.ndim == 3:
-		data2 = data2[:,:,0]
-		
-	data1 = np.nan_to_num(data1)
-	data2 = np.nan_to_num(data2)
-	data1 = data1.astype('float64')
-	data2 = data2.astype('float64')
-	
-	dictionary = similarity(data1, data2)
-	
-	data3 = transform_image(data2, dictionary['scale'], dictionary['angle'], dictionary['translation_vector'])
-	
-	return data3
 
 def Registration(folder):
 	import os
@@ -348,47 +324,3 @@ def Registration(folder):
 	
 	return(0)
 	
-def colour_mapping(image_1, image_2, number):
-	from PIL import Image
-	import matplotlib
-	import matplotlib.pyplot as plt
-	import os
-	 
-	image_2 = for_colour_mapping(image_1, image_2)
-	 
-	image_2_image = Image.fromarray(image_2)
-	plt.imsave("temp.tif", image_2_image, cmap="Created Space "+str(number), format="tif")
-	image_2_new = Image.open("temp.tif")
-	
-	blended = Image.blend(image_1, image_2, alpha = 0.5)
-	os.remove("temp.tif")
-	
-	return blended
-
-def Layering(list_of_images):
-	import os
-	from astropy.io import fits
-	
-	filelist = list_of_images
-	x = 0
-	stacked_image = np.array((1,1))
-	
-	for x in range(0, len(filelist)):
-		if x == 0:
-			pass
-		else:
-			stacked_image += colour_mapping(filelist[0], filelist[x], x)
-			
-	n = 1
-	filename = "Stacked_Image_"+str(n)+".fits"
-	
-	while True:
-		if os.path.isfile(folder+"/"+filename):
-			n += 1
-			filename = "/Stacked_Image_"+str(n)+".fits"
-		else:
-			break
-			
-	hdu = fits.PrimaryHDU()
-	hdu.data = stacked_image
-	hdu.writeto(folder+"/"+filename, overwrite = False)

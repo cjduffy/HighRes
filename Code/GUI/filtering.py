@@ -29,7 +29,7 @@ def filtering(fits_image, a, b):
 	
 	new_file = fits_image.replace(".fits", "_filtered.fits")
 	
-	hdu = fits.PrimaryHDU
+	hdu = fits.PrimaryHDU()
 	hdu.data = output
 	hdu.writeto(new_file, overwrite=True)
 	return(0)

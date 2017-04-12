@@ -14,7 +14,7 @@ import os
 import math
 from matplotlib.backends.backend_gtk3cairo import FigureCanvasGTK3Cairo as FigureCanvas
 import hotpixel as hp
-from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration, Layering
+from Registration import _nd_window, shaping, Logpolar, correlation, ang_scale, _get_emslices, embed_to, transform_image, check_rotation, translation, similarity, stack, Registration
 import filtering
 import string
 from matplotlib.colors import LinearSegmentedColormap

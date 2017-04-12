@@ -1,4 +1,4 @@
-image = imread('Lenna.png');
+image = imread('Images/Lenna.png');
 image = image(:,:,1);
 n = 1;
 for d = 0.01:0.005:0.1

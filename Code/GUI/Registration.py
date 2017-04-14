@@ -44,7 +44,8 @@ def Logpolar(image, angles=None, radii=None):
 	import numpy as np
 	import math
 	
-	"""Return log-polar transformed image and log base."""
+	"""Return log-polar transformed image and log base. Written 
+by Christoph Gohke, University of California"""
 	shape = image.shape
 	center = shape[0] / 2, shape[1] / 2
 	if angles is None:
@@ -112,7 +113,9 @@ def ang_scale(image_1, image_2):
 		
 def _get_emslices(shape1, shape2):
     """
-    Common code used by :func:`embed_to` and :func:`undo_embed`
+    Common code used by :func:`embed_to` and :func:`undo_embed` Written 
+by Christoph Gohlke, Univiersity of California and Matej Tyc, Brno 
+University of Technology
     """
     slices_from = []
     slices_to = []
@@ -147,6 +150,8 @@ def embed_to(where, what):
 
 	Returns:
 		The destination array
+	Written by Christoph Gohlke University of California and Matej 
+Tyc, Brno Univeristy of Technology
 	"""
 	slices_from, slices_to = _get_emslices(where.shape, what.shape)
 
